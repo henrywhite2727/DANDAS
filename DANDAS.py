@@ -3,22 +3,21 @@
 
 # # Dark matter ANnihilation and Decay Application Software (DANDAS)
 # ##### Code written by: Henry White, 20109413
-# ##### With lots of help from Aaron Vincent and Diyaselis Delgado 
+# ##### With lots of help from Aaron Vincent and Diyaselis Delgado López
 
 # In[1]:
 
 
 import numpy as np
-get_ipython().run_line_magic('pip', 'install vegas #(this line was used to install vegas in jupyter notebooks)')
+#get_ipython().run_line_magic('pip', 'install vegas')  #(this line was used to install vegas in jupyter notebooks)')
+%conda install vegas
 import vegas
 import pandas as pd
 from astropy import units
-import matplotlib.pyplot as plt
 from scipy import interpolate
 from astropy.coordinates import SkyCoord,EarthLocation, Galactic, AltAz, ICRS, get_icrs_coordinates
 from astropy.time import Time
 import scipy.optimize
-from scipy import integrate
 from scipy.interpolate import interp1d
 from scipy.stats import poisson
 import scipy.optimize
@@ -28,7 +27,7 @@ from scipy.special import gammaln
 from scipy.optimize import fsolve
 
 
-# In[2]:
+# In[ ]:
 
 
 def rescaling(mass,sigmaV,J,D):
@@ -36,72 +35,36 @@ def rescaling(mass,sigmaV,J,D):
     This function calculates DM decay lifetime to per nu + nubar flavor by rescaling annihilation cross section data
     (to all neutrino flavors). Because the cross section data is to per flavor, no experiment flavor detection factor 
     needs to be added.
-
+    
     mass: array in units of GeV, 2 times mass range used for annihilation should be input (due to decay assumptions)
     sigmaV: annihilation cross section array in [cm^3/s]
     J: The J factor for the given experiment in [Gev^2 cm^-5 sr]
     D: The D factor for a given experiment in [GeV cm^-2 sr]
     tau: the lifetimes in s
     '''
-
+    
     flux=np.zeros(len(mass))
     tau=np.zeros(len(mass))
-
+    
     for i in range(0,len(mass)):
         flux[i]=(1/(4*np.pi))*(sigmaV[i]/(2*(mass[i]/2)**2))*(1/3)*2*J   #mass is divided by 2 due to assumption in annihilation paper (2DM -> 2 nu)
         tau[i]=(1/(4*np.pi))*(1/flux[i])*(1/(3*mass[i]))*2*D      
 
     return tau
 
-def inv_rescaling(mass,tau,J,D):
-    '''
-    This function calculates DM cross section per nu + nubar flavor by rescaling lifetime limit data
-    (to all neutrino flavors). Because the cross section data is per flavor, no experiment flavor detection factor 
-    needs to be added.
-    '''
-    flux=np.zeros(len(mass))
-    sigmaV=np.zeros(len(mass))
-
-    for i in range(0,len(mass)):
-        flux[i]=(1/(4*np.pi))*(1/((mass[i])*tau[i]))*(1/3)*2*D   #mass is divided by 2 due to assumption in annihilation paper (2DM -> 2 nu)
-        sigmaV[i]=((4*np.pi))*(flux[i])*(2*mass[i]**2)*(3/2)/J      
-                                                                     
-    return sigmaV
-
-def bin_flux2Lifetime(alpha,delta,mass,flux,D):
-    '''
-    This function calculates the lifetime limit based on a binned neutrino flux. The mathematical 
-    formulation is derived in 'Dark Matter Decay to Neutrinos'
-    
-    '''
+def overleaf(alpha,delta,mass,flux,D):
     tau=((2*D*(alpha-1))/((3*mass**2)*16*np.pi**2))*((10**(delta/2)-10**(-delta/2))*flux)**-1
     return tau
 
-def bin_f2l_variable_delta(alpha,upper_delta,lower_delta,mass,flux,D):
-    '''
-    This function calculates the lifetime limit based on a binned neutrino flux with non constant bin
-    width. The mathematical formulation is derived in 'Dark Matter Decay to Neutrinos'
-    
-    '''
+def overleaf_variable_delta(alpha,upper_delta,lower_delta,mass,flux,D):
     tau=((2*D*(alpha-1))/((3*mass**2)*16*np.pi**2))*((10**(upper_delta/2)-10**(-lower_delta/2))*flux)**-1
     return tau
 
-def bin_f2l_alpha1(delta,mass,flux,D):
-    '''
-    This function calculates the lifetime limit based on a binned neutrino flux with a flat
-    power spectrum. The mathematical formulation is derived in 'Dark Matter Decay to Neutrinos'
-    
-    '''
-    
+def overleaf_alpha1(delta,mass,flux,D):
     tau=((2*D)/((3*mass**2)*16*np.pi**2))*(delta*np.log(10)*flux)**-1
     return tau
 
-def diff_flux2Lifetime(mass,flux,D):
-    '''
-    This function calculates the lifetime limit based on a differential neutrino flux. The mathematical 
-    formulation is derived in 'Dark Matter Decay to Neutrinos'
-    
-    '''
+def flux2Lifetime(mass,flux,D):
     tau=(1/(4*np.pi))*(1/flux)*(1/(3*mass))*2*D
     return tau
 
@@ -116,13 +79,13 @@ def binning(mass,flux):
     flux_log_binned=flux_logbin_func(new_log_mass)
     binned_mass=10**new_log_mass
     binned_flux=10**flux_log_binned
-
+    
     return binned_mass, binned_flux
 
 
 def log_centre_bin(low,high):
     '''#This function takes the edges of a bin and returns their logarithmic centre
-
+    
     '''
     log_centre=(np.log10(low)+np.log10(high))/2
     width=(np.log10(high)-np.log10(low))
@@ -137,66 +100,67 @@ def auger_factors(E):
     D1_aug=0.11e23 #[90,95]
     D2_aug=0.35e23 #[75,90]
     D3_aug=0.33e23 #[60,75]
-
+    
     J1_aug = 1.001651628542065e+22
     J2_aug = 2.83874979745116e+22
     J3_aug = 2.677412870123818e+22
-
+    
     #importing Auger Exposure Arrays
     LogExp1=np.loadtxt('LogExp1.txt',delimiter=',')
     LogExp2=np.loadtxt('LogExp2.txt',delimiter=',')
     LogExp3=np.loadtxt('LogExp3.txt',delimiter=',')
-
+    
     #Interpolating functions for each exposure range
     exp1=interp1d(LogExp1[:,0],LogExp1[:,1])
     exp2=interp1d(LogExp2[:,0],LogExp2[:,1])
     exp3=interp1d(LogExp3[:,0],LogExp3[:,1])
-
+    
     logexp1=np.zeros(len(E))
     logexp2=np.zeros(len(E))
     logexp3=np.zeros(len(E))
-
+    
     #Checking if elements of E are outside of the interpolation range
     for i in range(0,len(E)):
         if np.log10(E[i])<=LogExp1[0,0]:
             continue
         else:
             logexp1[i]=exp1(np.log10(E[i]))
-
+    
         if np.log10(E[i])<=LogExp2[0,0]:
             continue
         else:
             logexp2[i]=exp2(np.log10(E[i]))
-
+    
         if np.log10(E[i])<=LogExp3[0,0]:
             continue
         else:
             logexp3[i]=exp2(np.log10(E[i]))        
-
+    
     #"Un-log10 ing" the arrays
     Exp1=10**logexp1
     Exp2=10**logexp2
     Exp3=10**logexp3
-
-
+    
+    
     exptot=Exp1+Exp2+Exp3
-
+    
     J_array=(J1_aug*Exp1/exptot + J2_aug*Exp2/exptot + J3_aug*Exp3/exptot)
     D_array=(D1_aug*Exp1/exptot + D2_aug*Exp2/exptot + D3_aug*Exp3/exptot)
-
+    
     return J_array,D_array
 
 
-# In[ ]:
+# In[9]:
 
 
+test=DANDAS(1,'NFW',1,1)
+print(test)
 
 
+# In[2]:
 
-# In[25]:
 
-
-def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,**kwargs):
+def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,**kwargs):
     '''
     INPUTS
     
@@ -223,11 +187,6 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
                   NOTE: Not all parameters associated with the NFW and einasto profiles can be customized. The scale distance used (20 kpc)
                   , the gamma value (1.2), and the alpha value (1.55) cannot be changed due to run time associated with calculating 
                   J and D factors for different values of these parameters.
-                  
-    Antiparticle Nature: Whether a DM particle is assumed to be distinct from its antiparticle nature or not. Note that this
-                         parameter will only affect the annihilation cross section parameter. Inputs can be
-                         i) 'Majorana' : Assumes DM is its own antiparticle
-                         ii) 'Dirac'   : Assumes DM is distinct from its antiparticle counterpart
                     
     
     '''
@@ -917,112 +876,104 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
         '''
     
     
-    #Importing Annihilation Cross Section Data and accounting for antiparticle nature assumption
-    
-    if Antiparticle_Nature=='Majorana':
-        ann_factor=1
-    elif Antiparticle_Nature=='Dirac':
-        ann_factor=2    #If DM is distinct from its antiparticle, then a 2x higher annihilation cross section is required to match the neutrino fluxes measured
+    #Importing Annihilation Cross Section Data
     
     #Borexino Experiment (calculated from data from Fig. 4 in arxiv: 1909.02422v1)
     bor_ann=np.loadtxt('BorexinoAnnihilationLimits.txt')
     bor_mass=bor_ann[:,0]/1000   #converting from MeV -> GeV
-    bor_sigmaV=(bor_ann[:,1]/2)*ann_factor    #Due to factor of 2 issue in previously digitized data
+    bor_sigmaV=bor_ann[:,1]/2    #Due to factor of 2 issue in some digitized data
     
     #Kamlamd Experiment (Calculated from data in arxiv: 1909.02422v1)
     kamData=np.loadtxt('kamland.txt')
     kam_mass=(kamData[:,0])/1000  #dividing by 1000 to go MeV->GeV
-    kam_sigmaV=kamData[:,1]*ann_factor  
+    kam_sigmaV=kamData[:,1]  
     
     #Superkamiokande data (Calculated from Wan Linyan's PhD thesis: Experimental Studies on Low Energy Electron Antineutrinos and Related Physics)
     Sk_nuebar_Data=np.loadtxt('SK4_nuebar.csv', delimiter=',')
     Sk_nuebar_mass=(Sk_nuebar_Data[:,0])   
-    Sk_nuebar_sigmaV=Sk_nuebar_Data[:,1]*ann_factor 
+    Sk_nuebar_sigmaV=Sk_nuebar_Data[:,1] 
     
     #JUNO Experiment (data from https://arxiv.org/abs/1507.05613)
     juno_data=np.loadtxt('juno.txt')
     junoMass=juno_data[:,0]   
-    junosigmaV=(juno_data[:,1]/2)*ann_factor #Due to factor of 2 issue in previously digitized data
+    junosigmaV=juno_data[:,1]/2
     
     #Cross section limit calculated from SuperK atmospheric neutrino data, IceCube atmospheric neutrino data, and Icecube-HE (neutrinos from astrophysical sources)
-    congl=np.loadtxt('SK_IC_conglomerate.csv',delimiter=',')  #digitizing data in fig. 2 of https://arxiv.org/abs/1912.09486
-    congl_mass=congl[:,0]
-    congl_sigmaV=congl[:,1]*ann_factor
+    sk_atm_data=np.loadtxt('final_final_final_s_wave_Mmin_-3.0_halo_Sergio_combined_limits_glaactic.txt')
+    SK_IC_massFull=sk_atm_data[0] #mass in GeV
+    SK_IC_mass=sk_atm_massFull[15:-7]  #indexing is due to zeros present within data file
+    SK_IC_sigmaVFull=sk_atm_data[1]
+    SK_IC_sigmaV=sk_atm_sigmaVFull[15:-7]/4   #factor of 1/4 needed to match results in https://arxiv.org/abs/1912.09486
     
     #SuperK analysis by (Olivares et al.) found at from http://etheses.dur.ac.uk/13142/1/PhD_thesis_Olivares_FINAL.pdf?DDD25+
     sk_ol1=np.loadtxt('SK_Oliv_sigmaV.csv',delimiter=',')
     sk_ol_mass=sk_ol1[:,0]
-    sk_ol_sigmaV=sk_ol1[:,1]*ann_factor
+    sk_ol_sigmaV=sk_ol1[:,1]
     
     #SuperK analysis conducted in Katarzyna Frankiewicz PhD thesis at https://arxiv.org/abs/1510.07999
     SK_data1=np.loadtxt('SK_katarzyna.csv',delimiter=',')
     SK_mass1=SK_data1[:,0]
-    SK_sigmaV1=SK_data1[:,1]*ann_factor
+    SK_sigmaV1=SK_data1[:,1]
     
     #HyperK analysis conducted by (Bell et al.) found at https://arxiv.org/pdf/2005.01950.pdf
     hk=np.loadtxt('HK_sigmaV2.csv',delimiter=',')
     hk_mass=hk[:,0]
-    hk_sigmaV=hk[:,1]*4*ann_factor    #cross section is multiplied by 4 due to 20 yr exposure in their paper (all cross sections calculated within DANDAS are for a 5 yr exposure time)
+    hk_sigmaV=hk[:,1]*4    #cross section is multiplied by 4 due to 20 yr exposure in their paper (all cross sections calculated within DANDAS are for a 5 yr exposure time)
 
     #IceCube DeepCore analysis in https://arxiv.org/abs/2107.11224
     IC_deep=np.loadtxt('IC_Antares_best_sigmaV_lims.csv',delimiter=',')  #this is an erroneously titled data file, the data is not associated with the ANTARES neutrino experiment
     IC_deep_mass=IC_deep[:,0]
-    IC_deep_sigmaV=IC_deep[:,1]*ann_factor
+    IC_deep_sigmaV=IC_deep[:,1]
     
     #ANTARES neutrino telescope analysis in https://arxiv.org/abs/1612.04595
     ant_data_alb=np.loadtxt('Antares_alb.csv',delimiter=',')
-    ant_mass2=ant_data_alb[:,0]
-    ant_sigmaV=ant_data_alb[:,1]*ann_factor
+    ant_mass=ant_data_alb[:,0]
+    ant_sigmaV=ant_data_alb[:,1]
     
     #IceCube neutrino observatory combined analysis from https://arxiv.org/pdf/1606.00209.pdf and https://arxiv.org/pdf/1705.08103.pdf
     IceCube=np.loadtxt("IceCube_sigmaV_fig2.csv",delimiter=',')
     IC_mass=IceCube[:,0]
-    IC_sigmaV=IceCube[:,1]*ann_factor
+    IC_sigmaV=IceCube[:,1]
     
     #CTA neutrino experiment, cross section data from https://arxiv.org/abs/1912.09486
     CTA_dig=np.loadtxt('CTA_digitized.csv',delimiter=',')
-    CTA_mass2=CTA_dig[:,0]
-    CTA_sigmaV=CTA_dig[:,1]*ann_factor 
+    CTA_mass=CTA_dig[:,0]
+    CTA_sigmaV=CTA_dig[:,1] 
     
     #KM3NET experiment data from https://pos.sissa.it/358/552/pdf
     km3_data=np.loadtxt('KM3NET_sigmaV.csv',delimiter=',')
-    km3_mass=km3_data[:,0]  
-    km3_sigmaV=(km3_data[:,1]/np.sqrt(5))*ann_factor        #sqrt(5) is so cross section corresponds to a 5 yr exposure
+    km3_mass=km3_data[:,0]*2  
+    km3_sigmaV=km3_data[:,1]/np.sqrt(5)        #sqrt(5) is so cross section corresponds to a 5 yr exposure
     
     #PONE experiment data from https://arxiv.org/abs/1912.09486
-    P1_data=np.loadtxt('PONE_sigmaV.csv',delimiter=',')
-    P1_mass=P1_data[:,0]    #Indexing is based on length of sigmaV dataset
-    P1_sigmaV=P1_data[:,1]*ann_factor
+    P1_data=np.loadtxt('PONE.txt')
+    P1_mass=P1_data[1:49]    #Indexing is based on length of sigmaV dataset
+    P1_sigmaV=P1_data[51:99]
     
     #Icecube neutrino experiment  analysis of annihilation to electron neutrinos in https://arxiv.org/abs/1903.12623
     IC_bhat_nue=np.loadtxt('IC_bhat_nue_sigmaV.csv',delimiter=',')
     IC_bhat_nue_mass=IC_bhat_nue[:,0]*1000000 #converting from PeV -> GeV
-    IC_bhat_nue_sigmaV=(IC_bhat_nue[:,1]*2/3)*ann_factor    #factor of 1/3 is due to their assumption of single channel decay (I assume equal branching ratio all flavors)
+    IC_bhat_nue_sigmaV=IC_bhat_nue[:,1]/3    #factor of 1/3 is due to their assumption of single channel decay (I assume equal branching ratio all flavors)
     
     #GRAND experiment analysis from https://arxiv.org/abs/1912.09486
     grand_data=np.loadtxt('NewGRAND.txt',delimiter=',')
     grand_mass=grand_data[:,0]
-    grand_sigmaV=grand_data[:,1]*ann_factor
+    grand_sigmaV=grand_data[:,1]
 
     #RNO-G data from https://arxiv.org/abs/1912.09486
     rnogdata=np.loadtxt('newRNOG.txt',delimiter=',')
     rnog_mass=rnogdata[:,0]
-    rnog_sigmaV=(rnogdata[:,1]/2)*ann_factor     #Due to factor of 2 issue in previously digitized data
+    rnog_sigmaV=rnogdata[:,1]/2 #factor of 1/2 due to non-updated data
     
     #IceCube Extra High Energy (EHE) analysis in https://arxiv.org/abs/1912.09486
     icehe_data=np.loadtxt("NewICEHE.txt",delimiter=',')
     icehe_mass=icehe_data[:,0]
-    icehe_sigmaV=icehe_data[:,1]*ann_factor
+    icehe_sigmaV=icehe_data[:,1]
     
     #Auger experiment analysis from https://arxiv.org/abs/1912.09486
     auger_dat=np.loadtxt('newAuger.txt',delimiter=',')
     auger_mass=auger_dat[3:,0]
-    auger_sigmaV=auger_dat[3:,1]*ann_factor
-    
-    #Importing TAMBO annihilation cross section data from https://arxiv.org/abs/1912.09486 
-    tamboData=np.loadtxt('stambo.txt',delimiter=',')
-    tambo_Mass_ann=tamboData[:,0] 
-    tambo_sigmaV=(tamboData[:,1]/2)*ann_factor  #due to factor of 2 issue in previously digitized data
+    auger_sigmaV=auger_dat[3:,1]
     
     
     
@@ -1040,7 +991,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     bor_flux2=BorData[1]*2     #Adding factor of 2 so decay limit is per flavor (not just nue_bar)
 
 
-    bor_tau2=diff_flux2Lifetime(bor_mass2, bor_flux2, D_allsky)
+    bor_tau2=flux2Lifetime(bor_mass2, bor_flux2, D_allsky)
 
 
     #%% KamLand
@@ -1125,7 +1076,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
 
 
     tambo_mass=tambo_mvec*2 #due to decay assumptions 
-    tambo_tau_d=diff_flux2Lifetime(tambo_mass,phi_tambo,D_tambo)  
+    tambo_tau_d=flux2Lifetime(tambo_mass,phi_tambo,D_tambo)  
 
 
     #%% P-ONE Lifetimes
@@ -1133,8 +1084,8 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     #Importing P-ONE Data
     P1_data=np.loadtxt('PONE.txt')
 
-    P1_mass2=P1_data[1:49]   
-    #P1_sigmaV=P1_data[51:99]
+    P1_mass=P1_data[1:49]    #Omitting the first and last points in the mass array so it is the same size as the sigmaV array
+    P1_sigmaV=P1_data[51:99]
 
 
     #importing P-ONE effective area data
@@ -1146,11 +1097,11 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     aeff3=P1_aeffs[1:-1,3]
     aefftot=aeff1+aeff2+aeff3
 
-    J_P1=(J_pone1*aeff1/aefftot + J_pone2*aeff2/aefftot + J_pone3*aeff3/aefftot)*aefftot
-    D_P1=(D_pone1*aeff1/aefftot + D_pone2*aeff2/aefftot + D_pone3*aeff3/aefftot)*aefftot
+    J_P1=(J1_P1*aeff1/aefftot + J2_P1*aeff2/aefftot + J3_P1*aeff3/aefftot)*aefftot
+    D_P1=(D1_P1*aeff1/aefftot + D2_P1*aeff2/aefftot + D3_P1*aeff3/aefftot)*aefftot
 
-    P1_mass_ann=P1_mass2     #labelling this "annihilation mass" as it is not doubled (2 nu -> 2 DM assumption for annihilation)
-    P1_mass_decay=P1_mass2*2 #due to decay process (1 DM -> 2 nu)
+    P1_mass_ann=P1_mass     #labelling this "annihilation mass" as it is not doubled (2 nu -> 2 DM assumption for annihilation)
+    P1_mass_decay=P1_mass*2 #due to decay process (1 DM -> 2 nu)
 
     #Calculating lifetimes using method based off "PONEBackgroundBit.mat" code
 
@@ -1228,8 +1179,8 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     #Calculating lifetime limit using equation 1 in 'DM Decay to Neutrinos'
     P1_flux_direct=N_DM/exposure  
                                   
-    tau_P1_direct=(1/(4*np.pi*P1_flux_direct*3*(P1_mass_decay)))*2*(D_pone1*aeff1 + D_pone2*aeff2 + D_pone3*aeff3)
-    svlim = (4*np.pi*2*3*(P1_flux_direct)*(P1_mass_ann)**2)/(2*(J_pone1*aeff1 + J_pone2*aeff2 + J_pone3*aeff3))
+    tau_P1_direct=(1/(4*np.pi*P1_flux_direct*3*(P1_mass_decay)))*2*(aeff1*D1_P1+aeff2*D2_P1+aeff3*D3_P1)
+    svlim = (4*np.pi*2*3*(P1_flux_direct)*(P1_mass_ann)**2)/(2*(aeff1*J1_P1+aeff2*J2_P1+aeff3*J3_P1))
 
 
     #%% Auger Lifetimes
@@ -1250,11 +1201,15 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
 
     alpha_aug=2
     delta_aug=0.5
-    Auger_taud=bin_flux2Lifetime(alpha_aug,delta_aug,auger_DM_mass,auger_fluxd,D_auger)
+    Auger_taud=overleaf(alpha_aug,delta_aug,auger_DM_mass,auger_fluxd,D_auger)
 
 
     #%% Antares
-    ant_mass=ant_mass2*2  #factor of 2 for decay
+
+    #Importing annihilation cross section limits from https://arxiv.org/abs/1912.09486
+    ant_data=np.loadtxt('Antares.txt')
+    ant_mass=ant_data[:,0]*2  #factor of 2 for decay
+    ant_sigmaV=ant_data[:,1]
 
     #The previously published data was rescaled to a lifetime limit
     tau_ant=rescaling(ant_mass,ant_sigmaV,J_allsky,D_allsky)
@@ -1279,7 +1234,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     anita_flux=(anita_eflux*4*np.pi)/(anitaE*3)  #As flux is given per sr and all flavor flux)
     anita_DM_mass=anitaE*2
 
-    anita_tau_direct=diff_flux2Lifetime(anita_DM_mass,anita_flux,0.052e23)
+    anita_tau_direct=flux2Lifetime(anita_DM_mass,anita_flux,0.052e23)
 
 
     #%% JUNO Lifetimes
@@ -1396,7 +1351,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     grand_DM_mass=E_grand*2
 
     #Calculating lifetime limit based on binned flux data (with alpha=1 as the assumed power spectrum)
-    grand_tau_d=bin_f2l_alpha1(1,grand_DM_mass,grand_flux,D_grand)
+    grand_tau_d=overleaf_alpha1(1,grand_DM_mass,grand_flux,D_grand)
 
 
     #%% DUNE lifetimes
@@ -1404,7 +1359,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     #Importing annihilation cross section limits from https://arxiv.org/abs/1912.09486
     dune_dat=np.loadtxt('DUNE_sigmaV.csv',delimiter=',')
     dune_mass=dune_dat[:,0]*2
-    dune_sigmaV=dune_dat[:,1]*ann_factor
+    dune_sigmaV=dune_dat[:,1]
 
     #Rescaling annihilation limits from https://arxiv.org/abs/1912.09486
     dune_tau=rescaling(dune_mass,dune_sigmaV,J_allsky,D_allsky)
@@ -1449,7 +1404,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     ic_ehe_flux=(ic_ehe[:,1]/3)/ic_ehe_Enu**2  #Their flux is divided by 3 as they show the ALL FLAVOR flux (and we want flux per flavor so we can get lifetime per flavor)
     ic_ehe_mass=ic_ehe_Enu*2
 
-    ic_ehe_tau=bin_f2l_alpha1(1,ic_ehe_mass,ic_ehe_flux,D_allsky)
+    ic_ehe_tau=overleaf_alpha1(1,ic_ehe_mass,ic_ehe_flux,D_allsky)
 
     #%% Conglomerate of SK and IceCube (High Energy and atm. neutrinos) and IC (Bhattachrya)
 
@@ -1463,7 +1418,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
 
     #Importing IC Bhattachrya's DM -> nue decay lifetime line
     IC_bhat_nue=np.loadtxt('IC_bhat_nue_tau.csv',delimiter=',')
-    IC_bhat_nue_mass2=(IC_bhat_nue[:,0]*1000000)*2 #converting from PeV -> GeV
+    IC_bhat_nue_mass=IC_bhat_nue[:,0]*1000000 #converting from PeV -> GeV
     IC_bhat_nue_tau=IC_bhat_nue[:,1]/3    #factor of 1/3 is due to their assumption of single channel decay
 
     #Calculating rescaled lifetime limits from annihilation limits
@@ -1503,7 +1458,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     IC_astro_flux=(IceCube_Astro[:,1]+1.64*IC_astro_sigma)/(IC_astro_mass**2)
     IC_astro_mass=IceCube_Astro[:,0]*2
 
-    IC_astro_tau3=bin_flux2Lifetime(alpha,IC_astro_delta,IC_astro_mass,IC_astro_flux,D_allsky)
+    IC_astro_tau3=overleaf(alpha,IC_astro_delta,IC_astro_mass,IC_astro_flux,D_allsky)
 
     #Calculating IC astro lifetime using table G.1. (Bayesian Analysis) in HESE 7.5 year data paper 
     IC_astro_E=np.array([log_centre_bin(4.2e4,8.83e4),log_centre_bin(8.83e4,1.86e5),log_centre_bin(1.86e5,3.91e5),log_centre_bin(3.91e5,8.23e5),log_centre_bin(8.23e5,1.73e6),log_centre_bin(1.73e6,3.64e6),log_centre_bin(3.64e6,7.67e6)])
@@ -1512,7 +1467,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     IC_astro_flux_uppersigma=np.array([1.2e-17,1.5e-18,20e-20,47e-21,12e-21,28e-22,280e-24])
     IC_astro_flux_upperlim=(IC_astro_flux_G1+1.64*IC_astro_flux_uppersigma)/3 #factor of 1/3 as it gives flux to ALL flavors 
     IC_astro_delta=np.array([log_width_bin(4.2e4,8.83e4),log_width_bin(8.83e4,1.86e5),log_width_bin(1.86e5,3.91e5),log_width_bin(3.91e5,8.23e5),log_width_bin(8.23e5,1.73e6),log_width_bin(1.73e6,3.64e6),log_width_bin(3.64e6,7.67e6)]) 
-    IC_astro_tau_G1=bin_flux2Lifetime(alpha,IC_astro_delta,IC_astro_DM_mass,IC_astro_flux_upperlim,D_allsky)
+    IC_astro_tau_G1=overleaf(alpha,IC_astro_delta,IC_astro_DM_mass,IC_astro_flux_upperlim,D_allsky)
 
     #Calculating IC_nue delta array (assuming each point is in the direct centre of the bin)
     IC_nue=np.loadtxt('IceCube_nue.csv',delimiter=',')
@@ -1550,14 +1505,14 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     IC_nue_flux_upperlim=IC_nue_flux2+1.64*IC_nue_sigma
 
     #calculating lifetimes using variable delta method
-    IC_nue_tau_vardelta=bin_f2l_variable_delta(2,IC_nue_upper_delta,IC_nue_lower_delta,IC_nue_mass,IC_nue_flux_upperlim,D_allsky)
+    IC_nue_tau_vardelta=overleaf_variable_delta(2,IC_nue_upper_delta,IC_nue_lower_delta,IC_nue_mass,IC_nue_flux_upperlim,D_allsky)
 
 
     #Applying  eqn. 14 in overleaf
     alpha=2
     delta=0.2 #logarithmic bin width of about 0.2 log(E/GeV)
-    SK_nue_tau2=bin_flux2Lifetime(alpha,SK_nue_delta,SK_nue_mass,SK_nue_flux2,D_allsky)
-    IC_nue_tau2=bin_flux2Lifetime(alpha,delta,IC_nue_mass2,IC_nue_flux2,D_allsky)
+    SK_nue_tau2=overleaf(alpha,SK_nue_delta,SK_nue_mass,SK_nue_flux2,D_allsky)
+    IC_nue_tau2=overleaf(alpha,delta,IC_nue_mass2,IC_nue_flux2,D_allsky)
 
     #Appending IC nue, SK nue, and IC astro to make one solid line
 
@@ -1572,9 +1527,9 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     #IC_astro_mass_bin,IC_astro_flux_bin=binning(IC_astro_mass,IC_astro_flux)
     SK_nue_mass_bin,SK_nue_flux_bin=binning(SK_nue_mass,SK_nue_flux2)
 
-    IC_nue_tau_interp=bin_flux2Lifetime(alpha,delta,IC_nue_mass_bin,IC_nue_flux_bin,D_allsky)
-    #IC_astro_tau_interp=bin_flux2Lifetime(alpha,delta,IC_astro_mass_bin,IC_astro_flux_bin,D_allsky)
-    SK_nue_tau_interp=bin_flux2Lifetime(alpha,delta,SK_nue_mass_bin,SK_nue_flux_bin,D_allsky)
+    IC_nue_tau_interp=overleaf(alpha,delta,IC_nue_mass_bin,IC_nue_flux_bin,D_allsky)
+    #IC_astro_tau_interp=overleaf(alpha,delta,IC_astro_mass_bin,IC_astro_flux_bin,D_allsky)
+    SK_nue_tau_interp=overleaf(alpha,delta,SK_nue_mass_bin,SK_nue_flux_bin,D_allsky)
 
 
 
@@ -1594,8 +1549,8 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     Sk_nuebar_flux5=Sk_nuebarData5[1]*2  
 
 
-    SK_nuebar_tau4=diff_flux2Lifetime(Sk_nuebar_mass4,Sk_nuebar_flux4,D_allsky)
-    SK_nuebar_tau5=diff_flux2Lifetime(Sk_nuebar_mass5,Sk_nuebar_flux5,D_allsky)
+    SK_nuebar_tau4=flux2Lifetime(Sk_nuebar_mass4,Sk_nuebar_flux4,D_allsky)
+    SK_nuebar_tau5=flux2Lifetime(Sk_nuebar_mass5,Sk_nuebar_flux5,D_allsky)
 
     #Binning SK data
     binning_func=interp1d(Sk_nuebar_mass4,SK_nuebar_tau4, kind='nearest')
@@ -1624,38 +1579,47 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
 
     rno_delta=1  #due to one decade energy binning
     #Using flux data from updated paper: https://arxiv.org/pdf/2010.12279.pdf
-    rno_tau_a=bin_f2l_alpha1(rno_delta,rnog_a_mass,rnog_a_flux,D_allsky)
+    rno_tau_a=overleaf_alpha1(rno_delta,rnog_a_mass,rnog_a_flux,D_allsky)
 
 
     #%% Hyper Kamiokande
 
-    #Using data from https://arxiv.org/pdf/2005.01950.pdf
+    #Importing data from https://arxiv.org/pdf/2005.01950.pdf
+    hk=np.loadtxt('HK_sigmaV2.csv',delimiter=',')
     hk_mass_d=hk[:,0]*2
-    hk_tau_d=rescaling(hk_mass_d,hk_sigmaV,J_allsky,D_allsky)
+    hk_sigmaV_d=hk[:,1]*np.sqrt(4) #sqrt(4) is to change from 20 yr exposure to 5 yr exposure
+
+    hk_tau_d=rescaling(hk_mass_d,hk_sigmaV_d,J_allsky,D_allsky)
 
 
     #%% SK rescaling
 
-    #Using annihilation cross section data from https://arxiv.org/abs/1510.07999
-    SK_mass2=SK_mass1*2
+    #Importing annihilation cross section data from https://arxiv.org/abs/1510.07999
+    SK_data1=np.loadtxt('SK_katarzyna.csv',delimiter=',')
+    SK_mass1=SK_data1[:,0]*2
+    SK_sigmaV1=SK_data1[:,1]
 
-    SK_tau1=rescaling(SK_mass2,SK_sigmaV1,2.3e23,D_allsky)
+    SK_tau1=rescaling(SK_mass1,SK_sigmaV1,2.3e23,D_allsky)
 
 
     #%% KM3NET
 
     #Importing annihilation cross section data from https://pos.sissa.it/358/552/pdf
-    km3_mass2=km3_data[:,0]*2  #for decay of 1 DM to 2 neutrinos
+    km3_data=np.loadtxt('KM3NET_sigmaV.csv',delimiter=',')
+    km3_mass=km3_data[:,0]*2  #for decay of 1 DM to 2 neutrinos
+    km3_sigmaV=km3_data[:,1]/np.sqrt(5)
 
-    km3_tau=rescaling(km3_mass2,km3_sigmaV,J_allsky,D_allsky)
+    km3_tau=rescaling(km3_mass,km3_sigmaV,J_allsky,D_allsky)
 
     #%% SK (Olivares et al.)
 
-    #Using annihilation cross section data from http://etheses.dur.ac.uk/13142/1/PhD_thesis_Olivares_FINAL.pdf?DDD25+
-    sk_ol_mass2=sk_ol_mass*2
+    #Importing annihilation cross section data from http://etheses.dur.ac.uk/13142/1/PhD_thesis_Olivares_FINAL.pdf?DDD25+
+    sk_ol1=np.loadtxt('SK_Oliv_sigmaV.csv',delimiter=',')
+    sk_ol_mass=sk_ol1[:,0]*2
+    sk_ol_sigmaV=sk_ol1[:,1]
 
     #Rescaling annihilation limit to lifetime limit
-    sk_ol_tau=rescaling(sk_ol_mass2,sk_ol_sigmaV,J_allsky,D_allsky)
+    sk_ol_tau=rescaling(sk_ol_mass,sk_ol_sigmaV,J_allsky,D_allsky)
     
     #%% IceCube Gen-2 **this limit still needs work**
 
@@ -1665,7 +1629,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     gen2_flux=gen2[:,1]/(3*gen2_E**2)   #factor of 3 because they show an all flavour flux
     gen2_mass=gen2_E*2
 
-    gen2_tau=bin_f2l_alpha1(1,gen2_mass,gen2_flux,D_allsky)
+    gen2_tau=overleaf_alpha1(1,gen2_mass,gen2_flux,D_allsky)
 
     #importing data from fig 6
     gen2_6=np.loadtxt('IC_Gen2_Fig6.csv',delimiter=',')
@@ -1673,7 +1637,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     gen2_flux_6=(gen2_6[:,1]/(gen2_E_6**2))*624.151   #factor of 624 to convert erg -> GeV
     gen2_mass_6=gen2_E_6*2
 
-    gen2_tau_6=bin_flux2Lifetime(2, 1,gen2_mass_6,gen2_flux_6,D_allsky)
+    gen2_tau_6=overleaf(2, 1,gen2_mass_6,gen2_flux_6,D_allsky)
 
     #Importing annihilation cross section from DM annihilation paper
     gen2_r=np.loadtxt('IC_gen2_sigmaV.csv',delimiter=',')
@@ -1689,318 +1653,14 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     fermi=np.loadtxt('neutrino_Limit.csv',delimiter=',') #Limits from Cohen et al. (strongest lims from tau, mu, e data)
     fermi_ext=np.loadtxt('approx_neutrino_Limit.csv',delimiter=',')  #Approximation by Avi to extend limits to higher mass
 
+
+
     
-    #Plotting lifetime limits if desired by the user
-    if plot==True:
-        plt.rcParams.update({'font.size': 12})
-        plt.rcParams["font.family"] = "serif"
-        fsize=12
-         
-        #Graphics for Lifetime Limits plot
-        plt.figure(1,figsize=(19,11))
-        Bor_col='#1f77b4'
-        plt.plot(bor_mass2,bor_tau2, label='Borexino',linewidth=1.5,color=Bor_col,alpha=0.7, ls='-')
-        plt.fill_between(bor_mass2,bor_tau2, y2=1e-10,color=Bor_col,alpha=0.25,zorder=2)
-        plt.text(5e-3, 1e19, 'Borexino', fontsize=fsize,color=Bor_col)
-
-        kam_col='#ff7f0e'
-        plt.plot(kam_mass_mix, kam_best_tau_lims, label='KamLand',linewidth=1.5,color=kam_col,alpha=0.7, ls='-')
-        plt.fill_between(kam_mass_mix, kam_best_tau_lims, y2=1e-10,color=kam_col,alpha=0.25,zorder=2)
-        plt.text(7e-4, 1e22, 'KamLAND', fontsize=fsize,color=kam_col)
-
-        jun_col='#2ca02c'
-        plt.plot(juno_mass,juno_tau,label='JUNO',linewidth=1.5,color=jun_col,alpha=0.7, ls='--')
-        plt.text(5e-3, 6e23, 'JUNO', fontsize=fsize,color=jun_col)
-
-        sk_ol_col='#731fb4'
-        plt.plot(sk_ol_mass2,sk_ol_tau,label='SK (Olivares et al.)',linewidth=1.5,color=sk_ol_col,alpha=0.7, ls='-')
-        plt.fill_between(sk_ol_mass2,sk_ol_tau, y2=1e-10,color=sk_ol_col,alpha=0.25,zorder=2)
-        plt.text(4e-2, 2e21, 'SK (Olivares et al.)', fontsize=fsize,color=sk_ol_col)
-
-        sknu_col='#d62728'
-        plt.plot(sk_mass_mix,sk_best_tau_lims, label='$SK -\overline {v_e}\ $',linewidth=1.5,color=sknu_col,alpha=0.7, ls='-')
-        plt.fill_between(sk_mass_mix,sk_best_tau_lims, y2=1e-10,color=sknu_col,alpha=0.25,zorder=2)
-        plt.text(3e-2, 3e24, '$SK -\overline {v_e}\ $', fontsize=fsize,color=sknu_col)
-
-        hk_col='#ed26b5'
-        plt.plot(hk_mass_d,hk_tau_d,linewidth=1.5,color=hk_col,alpha=0.7, ls='--')
-        plt.text(9e-2, 1e24, 'HK (Bell et al.) ', fontsize=fsize,color=hk_col)
-
-        SK_col='#20B2AA'
-        plt.plot(SK_mass2,SK_tau1, label='SuperK', linewidth=1.5,color=SK_col,alpha=0.7, ls='-')
-        plt.fill_between(SK_mass2,SK_tau1, y2=1e-10,color=SK_col,alpha=0.25,zorder=2)
-        plt.text(10, 2e24, 'SK', fontsize=fsize,color=SK_col)
-
-        IC_col='#9467bd'
-        plt.plot(IC_decay_mass,tau_IC,label='IceCube', linewidth=1.5,color=IC_col,alpha=0.7, ls='-')
-        plt.fill_between(IC_decay_mass,tau_IC, y2=1e-10,color=IC_col,alpha=0.25,zorder=2)
-        plt.text(100, 1.5e25, 'IceCube', fontsize=fsize,color=IC_col)
-
-
-        ant_col='#e377c2'
-        plt.plot(ant_mass,tau_ant, label='ANTARES',linewidth=1.5,color=ant_col,alpha=0.7, ls='-')
-        plt.fill_between(ant_mass,tau_ant, y2=1e-10,color=ant_col,alpha=0.25,zorder=2)
-        plt.text(2000, 6.5e27, 'ANTARES', fontsize=fsize,color=ant_col)
-
-        icant_col='#7f7f7f'
-        plt.plot(IC_ant_mass,IC_ant_tau, label='IC-DeepCore',linewidth=1.5,color=icant_col,alpha=0.7, ls='-')
-        plt.fill_between(IC_ant_mass,IC_ant_tau, y2=1e-10,color=icant_col,alpha=0.25,zorder=2)
-        plt.text(10, 6.5e26, 'IC-DeepCore', fontsize=fsize,color=icant_col)
-
-        bhat_col='#d62728'
-        plt.plot(IC_bhat_nue_mass2,IC_bhat_nue_tau,label='IceCube (Bhattacharya, 2019)',linewidth=1.5,color=bhat_col,alpha=0.7, ls='-')
-        plt.fill_between(IC_bhat_nue_mass2,IC_bhat_nue_tau, y2=1e-10,color=bhat_col,alpha=0.25,zorder=2)
-        plt.text(6e5, 3e27, 'IceCube (Bhattacharya et al.)', fontsize=fsize,color=bhat_col)
-
-        cong_col='#8c564b'
-        plt.plot(combo_mass_binned, combo_tau_binned, label= 'SK atm. and IceCube-HE',linewidth=1.5,color=cong_col,alpha=0.7, ls='-')
-        plt.fill_between(combo_mass_binned, combo_tau_binned, y2=1e-10,color=cong_col,alpha=0.25,zorder=2)
-        plt.text(6e-1, 1e22, 'SK atm.', fontsize=fsize,color=cong_col)
-        plt.text(4e6, 9e28, 'IceCube-HE', fontsize=fsize,color=cong_col)
-
-        ehe_col='#17becf'
-        plt.plot(ic_ehe_mass,ic_ehe_tau,label='IceCube-EHE',linewidth=1.5,color=ehe_col,alpha=0.7, ls='-')
-        plt.fill_between(ic_ehe_mass,ic_ehe_tau, y2=1e-10,color=ehe_col,alpha=0.25,zorder=2)
-        plt.text(3e10, 6e27, 'IceCube-EHE', fontsize=fsize,color=ehe_col)
-
-        aug_col='#ff7f0e'
-        plt.plot(auger_DM_mass,Auger_taud,label='Auger',linewidth=1.5,color=aug_col,alpha=0.7, ls='-')
-        plt.fill_between(auger_DM_mass,Auger_taud, y2=1e-10,color=aug_col,alpha=0.25,zorder=2)
-        plt.text(1e10, 4e25, 'AUGER', fontsize=fsize,color=aug_col)
-
-        P1_col='#2ca02c'
-        plt.plot(P1_mass_decay,tau_P1_direct,label='P-ONE',linewidth=1.5,color=P1_col,alpha=0.7, ls='--')
-        plt.text(1e5, 1e29, 'P-ONE', fontsize=fsize,color=P1_col)
-
-        km3_col='#ff7f0e'
-        plt.plot(km3_mass2,km3_tau,label='KM3NET',linewidth=1.5,color=km3_col,alpha=0.7, ls='--')
-        plt.text(500, 5e28, 'KM3NET', fontsize=fsize,color=km3_col)
-
-        cta_col='#1f77b4'
-        plt.plot(cta_mass,tau_cta, label='CTA',linewidth=1.5,color=cta_col,alpha=0.7, ls='--')
-        plt.text(700, 3e23, 'CTA', fontsize=fsize,color=cta_col)
-
-        rno_col='#1f77b4'
-        plt.plot(rnog_a_mass,rno_tau_a,label='RNO-G',linewidth=1.5,color=rno_col,alpha=0.7, ls='--')
-        plt.text(8e9, 4e28, 'RNO-G', fontsize=fsize,color=rno_col)
-
-        grand_col='#e377c2'
-        plt.plot(grand_DM_mass,grand_tau_d,label='GRAND200k',linewidth=1.5,color=grand_col,alpha=0.7, ls='--')
-        plt.text(4e8, 9e28, 'GRAND', fontsize=fsize,color=grand_col)
-
-        dune_col='#8a8107'
-        plt.plot(dune_mass,dune_tau,label='DUNE',linewidth=1.5,color=dune_col,alpha=0.7, ls='--')
-        plt.text(3e-1, 2e23, 'DUNE', fontsize=fsize,color=dune_col)
-
-        tam_col='#731fb4'
-        plt.plot(tambo_mass,tambo_tau_d,label='TAMBO',linewidth=1.5,color=tam_col,alpha=0.7, ls='--')
-        plt.text(6e5, 8e26, 'TAMBO', fontsize=fsize,color=tam_col)
-
-        fer1_col='#2ca02c'
-        plt.plot(fermi[:,0],fermi[:,1],label='Fermi (Cohen et al.)',linewidth=1.5,color=fer1_col,alpha=0.7, ls='-')
-        plt.fill_between(fermi[:,0],fermi[:,1], y2=1e-10,color=fer1_col,alpha=0.25,zorder=2)
-        plt.text(3e5, 3e26, 'Fermi (Cohen et al.)', fontsize=fsize,color=fer1_col)
-
-        fer2_col='#000000'
-        plt.plot(fermi_ext[:,0],fermi_ext[:,1],label='Fermi Extension',linewidth=1.5,color=fer2_col,alpha=0.7, ls='-')
-        plt.fill_between(fermi_ext[:,0],fermi_ext[:,1], y2=1e-10,color=fer2_col,alpha=0.25,zorder=2)
-        plt.text(1e8, 7e25, 'Fermi Extension', fontsize=fsize,color=fer2_col)
-
-        plt.yscale("log")
-        plt.xscale("log")
-        plt.ylabel(r'$\tau_\chi$  [s]')
-        plt.xlabel(r'$m_\chi$ [GeV]')
-        plt.ylim(1e18,1e30)
         
-        #Graphics for Annihilation Cross Section Limits plot
-        plt.figure(2,figsize=(19,11))
-        fsize=12
-
-        Bor_col='#1f77b4'
-        plt.plot(bor_mass,bor_sigmaV, label='Borexino',linewidth=1.5,color=Bor_col,alpha=0.7, ls='-')
-        plt.fill_between(bor_mass,bor_sigmaV, y2=1e-15,color=Bor_col,alpha=0.25,zorder=2)
-        plt.text(bor_mass[0],bor_sigmaV[0]*5, 'Borexino', fontsize=fsize,color=Bor_col)
-
-        kam_col='#ff7f0e'
-        plt.plot(kam_mass, kam_sigmaV, label='KamLand',linewidth=1.5,color=kam_col,alpha=0.7, ls='-')
-        plt.fill_between(kam_mass, kam_sigmaV, y2=1e-15,color=kam_col,alpha=0.25,zorder=2)
-        plt.text(kam_mass[0]/8,kam_sigmaV[0], 'KamLAND', fontsize=fsize,color=kam_col)
-
-        jun_col='#2ca02c'
-        plt.plot(junoMass,junosigmaV,label='JUNO',linewidth=1.5,color=jun_col,alpha=0.7, ls='--')
-        plt.text(junoMass[0]/4, junosigmaV[0]/3, 'JUNO', fontsize=fsize,color=jun_col)
-
-        sk_ol_col='#731fb4'
-        plt.plot(sk_ol_mass,sk_ol_sigmaV,label='SK (Olivares et al.)',linewidth=1.5,color=sk_ol_col,alpha=0.7, ls='-')
-        plt.fill_between(sk_ol_mass,sk_ol_sigmaV, y2=1e-10,color=sk_ol_col,alpha=0.25,zorder=2)
-        plt.text(sk_ol_mass[-10], sk_ol_sigmaV[-10]*10, 'SK (Olivares et al.)', fontsize=fsize,color=sk_ol_col,rotation=90)
-
-        sknu_col='#d62728'
-        plt.plot(Sk_nuebar_mass,Sk_nuebar_sigmaV, label='$SK -\overline {v_e}\ $',linewidth=1.5,color=sknu_col,alpha=0.7, ls='-')
-        plt.fill_between(Sk_nuebar_mass,Sk_nuebar_sigmaV, y2=1e-10,color=sknu_col,alpha=0.25,zorder=2)
-        plt.text(Sk_nuebar_mass[0]/4, Sk_nuebar_sigmaV[0], '$ SK -\overline {v_e}\ $', fontsize=fsize,color=sknu_col)
-
-        hk_col='#ed26b5'
-        plt.plot(hk_mass,hk_sigmaV,linewidth=1.5,color=hk_col,alpha=0.7, ls='--')
-        plt.text(8e-2, 2e-25, 'HK (Bell et al.) ', fontsize=fsize,color=hk_col)
-
-        SK_col='#20B2AA'
-        plt.plot(SK_mass1,SK_sigmaV1, label='SuperK', linewidth=1.5,color=SK_col,alpha=0.7, ls='-')
-        plt.fill_between(SK_mass1,SK_sigmaV1, y2=1e-10,color=SK_col,alpha=0.25,zorder=2)
-        plt.text(SK_mass1[0], SK_sigmaV1[0]*3, 'SuperK', fontsize=fsize,color=SK_col)
-
-        IC_col='#9467bd'
-        plt.plot(IC_mass,IC_sigmaV,label='IceCube', linewidth=1.5,color=IC_col,alpha=0.7, ls='-')
-        plt.fill_between(IC_mass,IC_sigmaV, y2=1e-10,color=IC_col,alpha=0.25,zorder=2)
-        plt.text(IC_mass[0], IC_sigmaV[0], 'IceCube', fontsize=fsize,color=IC_col)
-
-
-        ant_col='#e377c2'
-        plt.plot(ant_mass2,ant_sigmaV, label='ANTARES',linewidth=1.5,color=ant_col,alpha=0.7, ls='-')
-        plt.fill_between(ant_mass2,ant_sigmaV, y2=1e-10,color=ant_col,alpha=0.25,zorder=2)
-        plt.text(600, 1e-24, 'ANTARES', fontsize=fsize,color=ant_col)
-
-        icant_col='#7f7f7f'
-        plt.plot(IC_deep_mass,IC_deep_sigmaV, label='IC-DeepCore',linewidth=1.5,color=icant_col,alpha=0.7, ls='-')
-        plt.fill_between(IC_deep_mass,IC_deep_sigmaV, y2=1e-10,color=icant_col,alpha=0.25,zorder=2)
-        plt.text(IC_deep_mass[0], 2e-25, 'IC-DeepCore', fontsize=fsize,color=icant_col)
-
-        bhat_col='#d62728'
-        plt.plot(IC_bhat_nue_mass/2,IC_bhat_nue_sigmaV,label='IceCube (Bhattacharya, 2019)',linewidth=1.5,color=bhat_col,alpha=0.7, ls='-')
-        plt.fill_between(IC_bhat_nue_mass/2,IC_bhat_nue_sigmaV, y2=1e-10,color=bhat_col,alpha=0.25,zorder=2)
-        plt.text(IC_bhat_nue_mass[0], IC_bhat_nue_sigmaV[0]*2, 'IceCube (Bhattacharya et al.)', fontsize=fsize,color=bhat_col,rotation=90)
-
-        cong_col='#8c564b'
-        plt.plot(congl_mass, congl_sigmaV, label= 'SK atm. and IceCube-HE',linewidth=1.5,color=cong_col,alpha=0.7, ls='-')
-        plt.fill_between(congl_mass,congl_sigmaV, y2=1e-10,color=cong_col,alpha=0.25,zorder=2)
-        plt.text(congl_mass[1], congl_sigmaV[1]*7, 'SK atm.', fontsize=fsize,color=cong_col)
-        plt.text(congl_mass[-1]/6, congl_sigmaV[-1]*1.5, 'IceCube-HE', fontsize=fsize,color=cong_col)
-
-        ehe_col='#17becf'
-        plt.plot(icehe_mass,icehe_sigmaV,label='IceCube-EHE',linewidth=1.5,color=ehe_col,alpha=0.7, ls='-')
-        plt.fill_between(icehe_mass,icehe_sigmaV, y2=1e-10,color=ehe_col,alpha=0.25,zorder=2)
-        plt.text(icehe_mass[0]*1.3,icehe_sigmaV[0], 'IceCube-EHE', fontsize=fsize,color=ehe_col)
-
-        aug_col='#ff7f0e'
-        plt.plot(auger_mass,auger_sigmaV,label='Auger',linewidth=1.5,color=aug_col,alpha=0.7, ls='-')
-        plt.fill_between(auger_mass,auger_sigmaV, y2=1e-10,color=aug_col,alpha=0.25,zorder=2)
-        #plt.text(1e10, 4e-25, 'AUGER', fontsize=fsize,color=aug_col)
-
-        P1_col='#2ca02c'
-        plt.plot(P1_mass,P1_sigmaV,label='P-ONE',linewidth=1.5,color=P1_col,alpha=0.7, ls='--')
-        plt.text(P1_mass[0], 1.9e-25, 'P-ONE', fontsize=fsize,color=P1_col)
-
-        km3_col='#ff7f0e'
-        plt.plot(km3_mass/2,km3_sigmaV,label='KM3NET',linewidth=1.5,color=km3_col,alpha=0.7, ls='--')
-        plt.text(P1_mass[0], 2e-26, 'KM3NET', fontsize=fsize,color=km3_col)
-
-        cta_col='#1f77b4'
-        plt.plot(CTA_mass2,CTA_sigmaV, label='CTA',linewidth=1.5,color=cta_col,alpha=0.7, ls='--')
-        plt.text(14000, 1e-24, 'CTA', fontsize=fsize,color=cta_col)
-
-        rno_col='#1f77b4'
-        plt.plot(rnog_mass,rnog_sigmaV,label='RNO-G',linewidth=1.5,color=rno_col,alpha=0.7, ls='--')
-        plt.text(rnog_mass[4]*3, rnog_sigmaV[4], 'RNO-G', fontsize=fsize,color=rno_col)
-
-        grand_col='#e377c2'
-        plt.plot(grand_mass,grand_sigmaV,label='GRAND200k',linewidth=1.5,color=grand_col,alpha=0.7, ls='--')
-        plt.text(rnog_mass[4]*12, rnog_sigmaV[4]*2, 'GRAND', fontsize=fsize,color=grand_col)
-
-        dune_col='#8a8107'
-        plt.plot(dune_mass/2,dune_sigmaV,label='DUNE',linewidth=1.5,color=dune_col,alpha=0.7, ls='--')
-        plt.text(dune_mass[4]/2,dune_sigmaV[4], 'DUNE', fontsize=fsize,color=dune_col)
-
-        tam_col='#731fb4'
-        plt.plot(tambo_Mass_ann,tambo_sigmaV,label='TAMBO',linewidth=1.5,color=tam_col,alpha=0.7, ls='--')
-        plt.text(congl_mass[-1]/6, 4e-22, 'TAMBO', fontsize=fsize,color=tam_col)
-
-        plt.yscale("log")
-        plt.xscale("log")
-        plt.ylabel(r'$ \langle \sigma\nu \rangle $ $ [cm^3/s] $')
-        plt.xlabel(r'$m_\chi$ [GeV]')
-        plt.ylim(1e-26,1e-19)
-        plt.xlim(1e-3,1e10)
-        
-        
-        '''
-        The following section allows the user to input any mass and receive the upper bound on the
-        annihilation cross section limit or the lower bound on lifetime if desired
-        
-        '''
-        if data==True:
-             #Appending all of the strongest annihilation limits        
-            sigmaV_full=np.append(bor_sigmaV[0:14],kam_sigmaV[:3])
-            sigmaV_full=np.append(sigmaV_full,Sk_nuebar_sigmaV)
-            sigmaV_full=np.append(sigmaV_full,sk_ol_sigmaV[17:])
-            sigmaV_full=np.append(sigmaV_full,congl_sigmaV[:8])
-            sigmaV_full=np.append(sigmaV_full,SK_sigmaV1[:2])
-            sigmaV_full=np.append(sigmaV_full,IC_deep_sigmaV)
-            sigmaV_full=np.append(sigmaV_full,ant_sigmaV[3:12])
-            sigmaV_full=np.append(sigmaV_full,congl_sigmaV[28:])
-            sigmaV_full=np.append(sigmaV_full,icehe_sigmaV[1:])
-
-
-            #Appending all of the corresponding masses for the annihilation limits  
-            mass1_full=np.append(bor_mass[0:14],kam_mass[:3])
-            mass1_full=np.append(mass1_full,Sk_nuebar_mass)
-            mass1_full=np.append(mass1_full,sk_ol_mass[17:])
-            mass1_full=np.append(mass1_full,congl_mass[:8])
-            mass1_full=np.append(mass1_full,SK_mass1[:2])
-            mass1_full=np.append(mass1_full,IC_deep_mass)
-            mass1_full=np.append(mass1_full,ant_mass2[3:12])
-            mass1_full=np.append(mass1_full,congl_mass[28:])
-            mass1_full=np.append(mass1_full,icehe_mass[1:])
-
-            strongest_sigmaV=interp1d(mass1_full,sigmaV_full)
-            m_x = kwargs.get('m_x', None)
-            #print('the upper bound on annihilation cross section at for a DM particle with mass',m_x,' GeV is sigmaV=',strongest_sigmaV(m_x))
-
-            #Appending all of the strongest lifetime limits        
-            tau_full=np.append(bor_tau2[0:14],kam_best_tau_lims[:4680])
-            tau_full=np.append(tau_full,sk_best_tau_lims[136:])
-            tau_full=np.append(tau_full,sk_ol_tau[17:])
-            tau_full=np.append(tau_full,combo_tau_binned[:97])
-            tau_full=np.append(tau_full,SK_tau1[:2])
-            tau_full=np.append(tau_full,IC_ant_tau)
-            tau_full=np.append(tau_full,tau_ant[20:68])
-            tau_full=np.append(tau_full,combo_tau_binned[707:])
-            tau_full=np.append(tau_full,ic_ehe_tau[1:])
-
-            #Appending all of the corresponding masses        
-            mass2_full=np.append(bor_mass2[0:14],kam_mass_mix[:4680])
-            mass2_full=np.append(mass2_full,sk_mass_mix[136:])
-            mass2_full=np.append(mass2_full,sk_ol_mass[17:])
-            mass2_full=np.append(mass2_full,combo_mass_binned[:97])
-            mass2_full=np.append(mass2_full,SK_mass1[:2])
-            mass2_full=np.append(mass2_full,IC_ant_mass)
-            mass2_full=np.append(mass2_full,ant_mass2[20:68])
-            mass2_full=np.append(mass2_full,combo_mass_binned[707:])
-            mass2_full=np.append(mass2_full,ic_ehe_mass[1:])
-
-            strongest_tau=interp1d(mass2_full,tau_full)
-            m_x = kwargs.get('m_x', None)
-            #print('the lower bound on DM lifetime at for a DM particle with mass',m_x,' GeV is t=',strongest_tau(m_x))
-
-
-
     output=1    
-    if data==True:
-        return strongest_sigmaV(m_x),strongest_tau(m_x)
-    else:
-        return 1
+    return J_cta
 
   
-
-
-# In[26]:
-
-
-# Testing DANDAS
-
-array=np.linspace(100,1e7,5)
-
-ann,dec=DANDAS(1,'NFW','Majorana',1,True,True,m_x=array)
-print(ann,dec)
 
 
 # #### Einasto Halo Profile:
@@ -2014,420 +1674,6 @@ print(ann,dec)
 # $ ρ_x (r)=ρ_s* \frac{2^{3-γ}}{((r/r_s )^γ (1+r/r_s )^{3-γ} )} $
 
 # # Scrap Work
-
-# In[53]:
-
-
-#Borexino Experiment (calculated from data from Fig. 4 in arxiv: 1909.02422v1)
-bor_ann=np.loadtxt('BorexinoAnnihilationLimits.txt')
-bor_mass=bor_ann[:,0]/1000   #converting from MeV -> GeV
-bor_sigmaV=bor_ann[:,1]/2    #Due to factor of 2 issue in some digitized data
-
-#Kamlamd Experiment (Calculated from data in arxiv: 1909.02422v1)
-kamData=np.loadtxt('kamland.txt')
-kam_mass=(kamData[:,0])/1000  #dividing by 1000 to go MeV->GeV
-kam_sigmaV=kamData[:,1]  
-
-#Superkamiokande data (Calculated from Wan Linyan's PhD thesis: Experimental Studies on Low Energy Electron Antineutrinos and Related Physics)
-Sk_nuebar_Data=np.loadtxt('SK4_nuebar.csv', delimiter=',')
-Sk_nuebar_mass=(Sk_nuebar_Data[:,0])   
-Sk_nuebar_sigmaV=Sk_nuebar_Data[:,1] 
-
-#JUNO Experiment (data from https://arxiv.org/abs/1507.05613)
-juno_data=np.loadtxt('juno.txt')
-junoMass=juno_data[:,0]   
-junosigmaV=juno_data[:,1]/2
-
-#Cross section limit calculated from SuperK atmospheric neutrino data, IceCube atmospheric neutrino data, and Icecube-HE (neutrinos from astrophysical sources)
-congl=np.loadtxt('SK_IC_conglomerate.csv',delimiter=',')  #digitizing data in fig. 2 of https://arxiv.org/abs/1912.09486
-congl_mass=congl[:,0]
-congl_sigmaV=congl[:,1]
-
-#SuperK analysis by (Olivares et al.) found at from http://etheses.dur.ac.uk/13142/1/PhD_thesis_Olivares_FINAL.pdf?DDD25+
-sk_ol1=np.loadtxt('SK_Oliv_sigmaV.csv',delimiter=',')
-sk_ol_mass=sk_ol1[:,0]
-sk_ol_sigmaV=sk_ol1[:,1]
-
-#SuperK analysis conducted in Katarzyna Frankiewicz PhD thesis at https://arxiv.org/abs/1510.07999
-SK_data1=np.loadtxt('SK_katarzyna.csv',delimiter=',')
-SK_mass1=SK_data1[:,0]
-SK_sigmaV1=SK_data1[:,1]
-
-#HyperK analysis conducted by (Bell et al.) found at https://arxiv.org/pdf/2005.01950.pdf
-hk=np.loadtxt('HK_sigmaV2.csv',delimiter=',')
-hk_mass=hk[:,0]
-hk_sigmaV=hk[:,1]*4    #cross section is multiplied by 4 due to 20 yr exposure in their paper (all cross sections calculated within DANDAS are for a 5 yr exposure time)
-
-#IceCube DeepCore analysis in https://arxiv.org/abs/2107.11224
-IC_deep=np.loadtxt('IC_Antares_best_sigmaV_lims.csv',delimiter=',')  #this is an erroneously titled data file, the data is not associated with the ANTARES neutrino experiment
-IC_deep_mass=IC_deep[:,0]
-IC_deep_sigmaV=IC_deep[:,1]
-
-#ANTARES neutrino telescope analysis in https://arxiv.org/abs/1612.04595
-ant_data_alb=np.loadtxt('Antares_alb.csv',delimiter=',')
-ant_mass2=ant_data_alb[:,0]
-ant_sigmaV=ant_data_alb[:,1]
-
-#IceCube neutrino observatory combined analysis from https://arxiv.org/pdf/1606.00209.pdf and https://arxiv.org/pdf/1705.08103.pdf
-IceCube=np.loadtxt("IceCube_sigmaV_fig2.csv",delimiter=',')
-IC_mass=IceCube[:,0]
-IC_sigmaV=IceCube[:,1]
-
-#CTA neutrino experiment, cross section data from https://arxiv.org/abs/1912.09486
-CTA_dig=np.loadtxt('CTA_digitized.csv',delimiter=',')
-CTA_mass2=CTA_dig[:,0]
-CTA_sigmaV=CTA_dig[:,1] 
-
-#KM3NET experiment data from https://pos.sissa.it/358/552/pdf
-km3_data=np.loadtxt('KM3NET_sigmaV.csv',delimiter=',')
-km3_mass=km3_data[:,0]*2  
-km3_sigmaV=km3_data[:,1]/np.sqrt(5)        #sqrt(5) is so cross section corresponds to a 5 yr exposure
-
-#PONE experiment data from https://arxiv.org/abs/1912.09486
-P1_data=np.loadtxt('PONE_sigmaV.csv',delimiter=',')
-P1_mass=P1_data[:,0]
-P1_sigmaV=P1_data[:,1]
-
-#Icecube neutrino experiment  analysis of annihilation to electron neutrinos in https://arxiv.org/abs/1903.12623
-IC_bhat_nue=np.loadtxt('IC_bhat_nue_sigmaV.csv',delimiter=',')
-IC_bhat_nue_mass=IC_bhat_nue[:,0]*1000000 #converting from PeV -> GeV
-IC_bhat_nue_sigmaV=IC_bhat_nue[:,1]/3    #factor of 1/3 is due to their assumption of single channel decay (I assume equal branching ratio all flavors)
-
-#GRAND experiment analysis from https://arxiv.org/abs/1912.09486
-grand_data=np.loadtxt('NewGRAND.txt',delimiter=',')
-grand_mass=grand_data[:,0]
-grand_sigmaV=grand_data[:,1]
-
-#RNO-G data from https://arxiv.org/abs/1912.09486
-rnogdata=np.loadtxt('newRNOG.txt',delimiter=',')
-rnog_mass=rnogdata[:,0]
-rnog_sigmaV=rnogdata[:,1]/2 #factor of 1/2 due to non-updated data
-
-#IceCube Extra High Energy (EHE) analysis in https://arxiv.org/abs/1912.09486
-icehe_data=np.loadtxt("NewICEHE.txt",delimiter=',')
-icehe_mass=icehe_data[:,0]
-icehe_sigmaV=icehe_data[:,1]
-
-#Auger experiment analysis from https://arxiv.org/abs/1912.09486
-auger_dat=np.loadtxt('newAuger.txt',delimiter=',')
-auger_mass=auger_dat[3:,0]
-auger_sigmaV=auger_dat[3:,1]
-
-#Importing TAMBO annihilation cross section data from https://arxiv.org/abs/1912.09486 
-tamboData=np.loadtxt('stambo.txt',delimiter=',')
-tambo_Mass=tamboData[:,0]   
-tambo_sigmaV=tamboData[:,1]
-
-# dune limits from https://arxiv.org/abs/1912.09486
-dune_dat=np.loadtxt('DUNE_sigmaV.csv',delimiter=',')
-dune_Mass=dune_dat[:,0]
-dune_sigmaV=dune_dat[:,1]
-
-#Importing the SK-nuebar annihilation cross section data
-Sk_nuebar_Data=np.loadtxt('SK4_nuebar.csv', delimiter=',')
-Sk_nuebar_Mass=(Sk_nuebar_Data[:,0])
-Sk_nuebar_sigmaV=Sk_nuebar_Data[:,1] 
-
-plt.figure(1,figsize=(19,11))
-fsize=12
-plt.rcParams.update({'font.size': 12})
-plt.rcParams["font.family"] = "serif"
-
-
-Bor_col='#1f77b4'
-plt.plot(bor_mass,bor_sigmaV, label='Borexino',linewidth=1.5,color=Bor_col,alpha=0.7, ls='-')
-plt.fill_between(bor_mass,bor_sigmaV, y2=1e-15,color=Bor_col,alpha=0.25,zorder=2)
-plt.text(bor_mass[0],bor_sigmaV[0]*5, 'Borexino', fontsize=fsize,color=Bor_col)
-
-kam_col='#ff7f0e'
-plt.plot(kam_mass, kam_sigmaV, label='KamLand',linewidth=1.5,color=kam_col,alpha=0.7, ls='-')
-plt.fill_between(kam_mass, kam_sigmaV, y2=1e-15,color=kam_col,alpha=0.25,zorder=2)
-plt.text(kam_mass[0]/8,kam_sigmaV[0], 'KamLAND', fontsize=fsize,color=kam_col)
-
-jun_col='#2ca02c'
-plt.plot(junoMass,junosigmaV,label='JUNO',linewidth=1.5,color=jun_col,alpha=0.7, ls='--')
-plt.text(junoMass[0]/4, junosigmaV[0]/3, 'JUNO', fontsize=fsize,color=jun_col)
-
-sk_ol_col='#731fb4'
-plt.plot(sk_ol_mass,sk_ol_sigmaV,label='SK (Olivares et al.)',linewidth=1.5,color=sk_ol_col,alpha=0.7, ls='-')
-plt.fill_between(sk_ol_mass,sk_ol_sigmaV, y2=1e-10,color=sk_ol_col,alpha=0.25,zorder=2)
-plt.text(sk_ol_mass[-10], sk_ol_sigmaV[-10]*10, 'SK (Olivares et al.)', fontsize=fsize,color=sk_ol_col,rotation=90)
-
-sknu_col='#d62728'
-plt.plot(Sk_nuebar_Mass,Sk_nuebar_sigmaV, label='$SK -\overline {v_e}\ $',linewidth=1.5,color=sknu_col,alpha=0.7, ls='-')
-plt.fill_between(Sk_nuebar_Mass,Sk_nuebar_sigmaV, y2=1e-10,color=sknu_col,alpha=0.25,zorder=2)
-plt.text(Sk_nuebar_Mass[0]/4, Sk_nuebar_sigmaV[0], '$ SK -\overline {v_e}\ $', fontsize=fsize,color=sknu_col)
-
-hk_col='#ed26b5'
-plt.plot(hk_mass,hk_sigmaV,linewidth=1.5,color=hk_col,alpha=0.7, ls='--')
-plt.text(8e-2, 2e-25, 'HK (Bell et al.) ', fontsize=fsize,color=hk_col)
-
-SK_col='#20B2AA'
-plt.plot(SK_mass1,SK_sigmaV1, label='SuperK', linewidth=1.5,color=SK_col,alpha=0.7, ls='-')
-plt.fill_between(SK_mass1,SK_sigmaV1, y2=1e-10,color=SK_col,alpha=0.25,zorder=2)
-plt.text(SK_mass1[0], SK_sigmaV1[0]*3, 'SuperK', fontsize=fsize,color=SK_col)
-
-IC_col='#9467bd'
-plt.plot(IC_mass,IC_sigmaV,label='IceCube', linewidth=1.5,color=IC_col,alpha=0.7, ls='-')
-plt.fill_between(IC_mass,IC_sigmaV, y2=1e-10,color=IC_col,alpha=0.25,zorder=2)
-plt.text(IC_mass[0], IC_sigmaV[0], 'IceCube', fontsize=fsize,color=IC_col)
-
-
-ant_col='#e377c2'
-plt.plot(ant_mass2,ant_sigmaV, label='ANTARES',linewidth=1.5,color=ant_col,alpha=0.7, ls='-')
-plt.fill_between(ant_mass2,ant_sigmaV, y2=1e-10,color=ant_col,alpha=0.25,zorder=2)
-plt.text(600, 1e-24, 'ANTARES', fontsize=fsize,color=ant_col)
-
-icant_col='#7f7f7f'
-plt.plot(IC_deep_mass,IC_deep_sigmaV, label='IC-DeepCore',linewidth=1.5,color=icant_col,alpha=0.7, ls='-')
-plt.fill_between(IC_deep_mass,IC_deep_sigmaV, y2=1e-10,color=icant_col,alpha=0.25,zorder=2)
-plt.text(IC_deep_mass[0], 2e-25, 'IC-DeepCore', fontsize=fsize,color=icant_col)
-
-bhat_col='#d62728'
-plt.plot(IC_bhat_nue_mass/2,IC_bhat_nue_sigmaV,label='IceCube (Bhattacharya, 2019)',linewidth=1.5,color=bhat_col,alpha=0.7, ls='-')
-plt.fill_between(IC_bhat_nue_mass/2,IC_bhat_nue_sigmaV, y2=1e-10,color=bhat_col,alpha=0.25,zorder=2)
-plt.text(IC_bhat_nue_mass[0], IC_bhat_nue_sigmaV[0]*2, 'IceCube (Bhattacharya et al.)', fontsize=fsize,color=bhat_col,rotation=90)
-
-cong_col='#8c564b'
-plt.plot(congl_mass, congl_sigmaV, label= 'SK atm. and IceCube-HE',linewidth=1.5,color=cong_col,alpha=0.7, ls='-')
-plt.fill_between(congl_mass,congl_sigmaV, y2=1e-10,color=cong_col,alpha=0.25,zorder=2)
-plt.text(congl_mass[1], congl_sigmaV[1]*7, 'SK atm.', fontsize=fsize,color=cong_col)
-plt.text(congl_mass[-1]/6, congl_sigmaV[-1]*1.5, 'IceCube-HE', fontsize=fsize,color=cong_col)
-
-ehe_col='#17becf'
-plt.plot(icehe_mass,icehe_sigmaV,label='IceCube-EHE',linewidth=1.5,color=ehe_col,alpha=0.7, ls='-')
-plt.fill_between(icehe_mass,icehe_sigmaV, y2=1e-10,color=ehe_col,alpha=0.25,zorder=2)
-plt.text(icehe_mass[0]*1.3,icehe_sigmaV[0], 'IceCube-EHE', fontsize=fsize,color=ehe_col)
-
-aug_col='#ff7f0e'
-plt.plot(auger_mass,auger_sigmaV,label='Auger',linewidth=1.5,color=aug_col,alpha=0.7, ls='-')
-plt.fill_between(auger_mass,auger_sigmaV, y2=1e-10,color=aug_col,alpha=0.25,zorder=2)
-#plt.text(1e10, 4e-25, 'AUGER', fontsize=fsize,color=aug_col)
-
-P1_col='#2ca02c'
-plt.plot(P1_mass,P1_sigmaV,label='P-ONE',linewidth=1.5,color=P1_col,alpha=0.7, ls='--')
-plt.text(P1_mass[0], 1.9e-25, 'P-ONE', fontsize=fsize,color=P1_col)
-
-km3_col='#ff7f0e'
-plt.plot(km3_mass/2,km3_sigmaV,label='KM3NET',linewidth=1.5,color=km3_col,alpha=0.7, ls='--')
-plt.text(P1_mass[0], 2e-26, 'KM3NET', fontsize=fsize,color=km3_col)
-
-cta_col='#1f77b4'
-plt.plot(CTA_mass2,CTA_sigmaV, label='CTA',linewidth=1.5,color=cta_col,alpha=0.7, ls='--')
-plt.text(14000, 1e-24, 'CTA', fontsize=fsize,color=cta_col)
-
-rno_col='#1f77b4'
-plt.plot(rnog_mass,rnog_sigmaV,label='RNO-G',linewidth=1.5,color=rno_col,alpha=0.7, ls='--')
-plt.text(rnog_mass[4]*3, rnog_sigmaV[4], 'RNO-G', fontsize=fsize,color=rno_col)
-
-grand_col='#e377c2'
-plt.plot(grand_mass,grand_sigmaV,label='GRAND200k',linewidth=1.5,color=grand_col,alpha=0.7, ls='--')
-plt.text(rnog_mass[4]*12, rnog_sigmaV[4]*2, 'GRAND', fontsize=fsize,color=grand_col)
-
-dune_col='#8a8107'
-plt.plot(dune_Mass,dune_sigmaV,label='DUNE',linewidth=1.5,color=dune_col,alpha=0.7, ls='--')
-plt.text(dune_Mass[4],dune_sigmaV[4], 'DUNE', fontsize=fsize,color=dune_col)
-
-tam_col='#731fb4'
-plt.plot(tambo_Mass,tambo_sigmaV,label='TAMBO',linewidth=1.5,color=tam_col,alpha=0.7, ls='--')
-plt.text(congl_mass[-1]/6, 4e-22, 'TAMBO', fontsize=fsize,color=tam_col)
-
-plt.yscale("log")
-plt.xscale("log")
-plt.ylabel(r'$\sigma\nu  [cm^3/s] $')
-plt.xlabel(r'$m_\chi$ [GeV]')
-plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left') # Plot the probability distribution |\psi|^2
-plt.ylim(1e-26,1e-19)
-plt.xlim(1e-3,1e10)
-
-plt.plot(mass1_full,sigmaV_full,'k')
-
-print(len(IC_bhat_nue_mass))
-
-
-# In[59]:
-
-
-#Developing the interpolation function for DANDAS
-
-#Seeing where Kam<Bor
-for i in range(len(bor_sigmaV)):
-    if bor_mass[i]>kam_mass[0]:
-        print('the index is ',i, 'and the mass is',bor_mass[i])
-        break
-
-#Seeing where SK_nuebar<kam
-for i in range(len(kam_mass)):
-    if kam_mass[i]>Sk_nuebar_mass[0]:
-        print('the index is ',i)
-        break
-
-#Seeing where SK olivares<SK nuebar
-for i in range(len(sk_ol_mass)):
-    if sk_ol_mass[i]>Sk_nuebar_mass[-1]:
-        print('the index is ',i)
-        break
-        
-#Seeing where SK atm<SuperK
-for i in range(len(sk_ol_mass)):
-    if congl_mass[i]>SK_mass1[0]:
-        print('the index is ',i)
-        break
-        
-#Seeing where SuperK>IC-Deepcore
-for i in range(len(sk_ol_mass)):
-    if IC_deep_mass[0]<SK_mass1[i]:
-        print('the index is ',i)
-        break
-        
-#Seeing where IC deepcore<Antares
-for i in range(len(ant_mass2)):
-    if ant_sigmaV[i]>1e-23:
-        print('the index is ',i)
-        break
-        
-#Seeing where IC-EHE>Antares
-for i in range(len(congl_sigmaV)):
-    if congl_sigmaV[i]<1e-23:
-        print(i)
- 
-
- #Appending all of the strongest annihilation limits        
-sigmaV_full=np.append(bor_sigmaV[0:14],kam_sigmaV[:3])
-sigmaV_full=np.append(sigmaV_full,Sk_nuebar_sigmaV)
-sigmaV_full=np.append(sigmaV_full,sk_ol_sigmaV[17:])
-sigmaV_full=np.append(sigmaV_full,congl_sigmaV[:8])
-sigmaV_full=np.append(sigmaV_full,SK_sigmaV1[:2])
-sigmaV_full=np.append(sigmaV_full,IC_deep_sigmaV)
-sigmaV_full=np.append(sigmaV_full,ant_sigmaV[3:12])
-sigmaV_full=np.append(sigmaV_full,congl_sigmaV[28:])
-sigmaV_full=np.append(sigmaV_full,icehe_sigmaV[1:])
-    
-    
-#Appending all of the corresponding masses for the annihilation limits  
-mass1_full=np.append(bor_mass[0:14],kam_mass[:3])
-mass1_full=np.append(mass1_full,Sk_nuebar_mass)
-mass1_full=np.append(mass1_full,sk_ol_mass[17:])
-mass1_full=np.append(mass1_full,congl_mass[:8])
-mass1_full=np.append(mass1_full,SK_mass1[:2])
-mass1_full=np.append(mass1_full,IC_deep_mass)
-mass1_full=np.append(mass1_full,ant_mass2[3:12])
-mass1_full=np.append(mass1_full,congl_mass[28:])
-mass1_full=np.append(mass1_full,icehe_mass[1:])
-
-strongest_sigmaV=interp1d(mass1_full,sigmaV_full)
-
-print('the strongest limit at m=1000 GeV is sigmaV=',strongest_sigmaV(1000))
-
-print(mass1_full[-1])
-
-
-#checking to make sure limits look right
-plt.plot(mass1_full,sigmaV_full)
-plt.plot(bor_mass,bor_sigmaV)
-plt.plot(kam_mass,kam_sigmaV)
-plt.plot(Sk_nuebar_mass,Sk_nuebar_sigmaV)
-plt.xscale('log')
-plt.yscale('log')
-    
-
-
-# In[ ]:
-
-
-
-#Seeing where Kam<Bor
-for i in range(len(bor_tau2)):
-    if bor_mass2[i]>kam_mass_mix[0]:
-        print('the index is ',i, 'and the mass is',bor_mass2[i])
-        break
-
-#Seeing where SK_nuebar<kam
-for i in range(len(kam_mass_mix)):
-    if kam_mass_mix[i]>2.6e-2:
-        print('the index is ',i)
-        break
-
-
-for i in range(len(sk_mass_mix)):
-    if sk_mass_mix[i]>2.6e-2:
-        print('the index is ',i)
-        break
-#Seeing where SK olivares<SK nuebar        
-for i in range(len(sk_ol_mass)):
-    if sk_mass_mix[-1]<sk_ol_mass[i]:
-        print('the index is ',i)
-        break
-        
-#Seeing where SK atm<SuperK
-for i in range(len(combo_mass_binned)):
-    if combo_mass_binned[i]>SK_mass1[0]:
-        print('the index is ',i)
-        break
-        
-#Seeing where SuperK>IC-Deepcore
-for i in range(len(SK_mass1)):
-    if IC_ant_mass[0]<SK_mass1[i]:
-        print('the index is ...',i)
-        break
-        
-#Seeing where IC deepcore<Antares
-for i in range(len(ant_mass2)):
-    if ant_mass2[i]>IC_ant_mass[-1]:
-        print('the index is :) ',i)
-        break
-        
-#Seeing where Antares stops
-for i in range(len(ant_mass2)):
-    if ant_mass2[i]>7.1e4:
-        print('the index is :) ',i)
-        break
-        
-#Seeing where IC-EHE>Antares
-for i in range(len(combo_mass_binned)):
-    if combo_mass_binned[i]>7.1e4:
-        print(i)
-        break
-
-#Appending all of the strongest lifetime limits        
-tau_full=np.append(bor_tau2[0:14],kam_best_tau_lims[:4680])
-tau_full=np.append(tau_full,sk_best_tau_lims[136:])
-tau_full=np.append(tau_full,sk_ol_tau[17:])
-tau_full=np.append(tau_full,combo_tau_binned[:97])
-tau_full=np.append(tau_full,SK_tau1[:2])
-tau_full=np.append(tau_full,IC_ant_tau)
-tau_full=np.append(tau_full,tau_ant[20:68])
-tau_full=np.append(tau_full,combo_tau_binned[707:])
-tau_full=np.append(tau_full,ic_ehe_tau[1:])
-
-#Appending all of the corresponding masses        
-mass2_full=np.append(bor_mass2[0:14],kam_mass_mix[:4680])
-mass2_full=np.append(mass2_full,sk_mass_mix[136:])
-mass2_full=np.append(mass2_full,sk_ol_mass[17:])
-mass2_full=np.append(mass2_full,combo_mass_binned[:97])
-mass2_full=np.append(mass2_full,SK_mass1[:2])
-mass2_full=np.append(mass2_full,IC_ant_mass)
-mass2_full=np.append(mass2_full,ant_mass2[20:68])
-mass2_full=np.append(mass2_full,combo_mass_binned[707:])
-mass2_full=np.append(mass2_full,ic_ehe_mass[1:])
-
-strongest_tau=interp1d(mass2_full,tau_full)
-#m_x = kwargs.get('m_x', None)
-m_x=10
-print('the lower bound on DM lifetime at for a DM particle with mass',m_x,' GeV is t=',strongest_tau(m_x))
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
 
 # In[ ]:
 
@@ -2907,7 +2153,7 @@ class Dfactor:
             annihilation_result = integrate(annihilation_integrand, nitn=10, neval=1000)
 
         self.dfactor = decay_result
-        self.jfactor = annihilation result
+        self.jfactor = annihilation_result
         self.mean = decay_result.mean
         self.sdev = decay_result.sdev
         self.error = decay_result.sdev/decay_result.mean
