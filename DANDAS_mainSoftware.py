@@ -1986,26 +1986,3 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     else:
         return 1
 
-  
-
-
-# In[26]:
-
-
-# Testing DANDAS
-
-array=np.linspace(100,1e7,5)
-
-ann,dec=DANDAS(1,'NFW','Majorana',1,True,True,m_x=array)
-print(ann,dec)
-
-
-# #### Einasto Halo Profile:
-# 
-# $ ρ_x (r)=ρ_s*exp⁡[(\frac{-2 }{ α})*(\frac{r}{ r_s })^{α-1}] $
-# 
-#  
-# 
-# #### NFW Halo Profile:
-# 
-# $ ρ_x (r)=ρ_s* \frac{2^{3-γ}}{((r/r_s )^γ (1+r/r_s )^{3-γ} )} $
