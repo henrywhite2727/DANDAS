@@ -9,8 +9,8 @@
 
 
 import numpy as np
-#get_ipython().run_line_magic('pip', 'install vegas')  #(this line was used to install vegas in jupyter notebooks)')
-%conda install vegas
+get_ipython().run_line_magic('pip', 'install vegas')  #(this line was used to install vegas in jupyter notebooks)')
+#conda install vegas
 import vegas
 import pandas as pd
 from astropy import units
