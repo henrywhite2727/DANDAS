@@ -143,9 +143,9 @@ def auger_factors(E):
     J3_aug = 2.677412870123818e+22
 
     #importing Auger Exposure Arrays
-    LogExp1=np.loadtxt('LogExp1.txt',delimiter=',')
-    LogExp2=np.loadtxt('LogExp2.txt',delimiter=',')
-    LogExp3=np.loadtxt('LogExp3.txt',delimiter=',')
+    LogExp1=np.loadtxt('Data_Files/LogExp1.txt',delimiter=',')
+    LogExp2=np.loadtxt('Data_Files/LogExp2.txt',delimiter=',')
+    LogExp3=np.loadtxt('Data_Files/LogExp3.txt',delimiter=',')
 
     #Interpolating functions for each exposure range
     exp1=interp1d(LogExp1[:,0],LogExp1[:,1])
@@ -919,102 +919,102 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
         ann_factor=2    #If DM is distinct from its antiparticle, then a 2x higher annihilation cross section is required to match the neutrino fluxes measured
     
     #Borexino Experiment (calculated from data from Fig. 4 in arxiv: 1909.02422v1)
-    bor_ann=np.loadtxt('BorexinoAnnihilationLimits.txt')
+    bor_ann=np.loadtxt('Data_Files/BorexinoAnnihilationLimits.txt')
     bor_mass=bor_ann[:,0]/1000   #converting from MeV -> GeV
     bor_sigmaV=(bor_ann[:,1]/2)*ann_factor    #Due to factor of 2 issue in previously digitized data
     
     #Kamlamd Experiment (Calculated from data in arxiv: 1909.02422v1)
-    kamData=np.loadtxt('kamland.txt')
+    kamData=np.loadtxt('Data_Files/kamland.txt')
     kam_mass=(kamData[:,0])/1000  #dividing by 1000 to go MeV->GeV
     kam_sigmaV=kamData[:,1]*ann_factor  
     
     #Superkamiokande data (Calculated from Wan Linyan's PhD thesis: Experimental Studies on Low Energy Electron Antineutrinos and Related Physics)
-    Sk_nuebar_Data=np.loadtxt('SK4_nuebar.csv', delimiter=',')
+    Sk_nuebar_Data=np.loadtxt('Data_Files/SK4_nuebar.csv', delimiter=',')
     Sk_nuebar_mass=(Sk_nuebar_Data[:,0])   
     Sk_nuebar_sigmaV=Sk_nuebar_Data[:,1]*ann_factor 
     
     #JUNO Experiment (data from https://arxiv.org/abs/1507.05613)
-    juno_data=np.loadtxt('juno.txt')
+    juno_data=np.loadtxt('Data_Files/juno.txt')
     junoMass=juno_data[:,0]   
     junosigmaV=(juno_data[:,1]/2)*ann_factor #Due to factor of 2 issue in previously digitized data
     
     #Cross section limit calculated from SuperK atmospheric neutrino data, IceCube atmospheric neutrino data, and Icecube-HE (neutrinos from astrophysical sources)
-    congl=np.loadtxt('SK_IC_conglomerate.csv',delimiter=',')  #digitizing data in fig. 2 of https://arxiv.org/abs/1912.09486
+    congl=np.loadtxt('Data_Files/SK_IC_conglomerate.csv',delimiter=',')  #digitizing data in fig. 2 of https://arxiv.org/abs/1912.09486
     congl_mass=congl[:,0]
     congl_sigmaV=congl[:,1]*ann_factor
     
     #SuperK analysis by (Olivares et al.) found at from http://etheses.dur.ac.uk/13142/1/PhD_thesis_Olivares_FINAL.pdf?DDD25+
-    sk_ol1=np.loadtxt('SK_Oliv_sigmaV.csv',delimiter=',')
+    sk_ol1=np.loadtxt('Data_Files/SK_Oliv_sigmaV.csv',delimiter=',')
     sk_ol_mass=sk_ol1[:,0]
     sk_ol_sigmaV=sk_ol1[:,1]*ann_factor
     
     #SuperK analysis conducted in Katarzyna Frankiewicz PhD thesis at https://arxiv.org/abs/1510.07999
-    SK_data1=np.loadtxt('SK_katarzyna.csv',delimiter=',')
+    SK_data1=np.loadtxt('Data_Files/SK_katarzyna.csv',delimiter=',')
     SK_mass1=SK_data1[:,0]
     SK_sigmaV1=SK_data1[:,1]*ann_factor
     
     #HyperK analysis conducted by (Bell et al.) found at https://arxiv.org/pdf/2005.01950.pdf
-    hk=np.loadtxt('HK_sigmaV2.csv',delimiter=',')
+    hk=np.loadtxt('Data_Files/HK_sigmaV2.csv',delimiter=',')
     hk_mass=hk[:,0]
     hk_sigmaV=hk[:,1]*4*ann_factor    #cross section is multiplied by 4 due to 20 yr exposure in their paper (all cross sections calculated within DANDAS are for a 5 yr exposure time)
 
     #IceCube DeepCore analysis in https://arxiv.org/abs/2107.11224
-    IC_deep=np.loadtxt('IC_Antares_best_sigmaV_lims.csv',delimiter=',')  #this is an erroneously titled data file, the data is not associated with the ANTARES neutrino experiment
+    IC_deep=np.loadtxt('Data_Files/IC_Antares_best_sigmaV_lims.csv',delimiter=',')  #this is an erroneously titled data file, the data is not associated with the ANTARES neutrino experiment
     IC_deep_mass=IC_deep[:,0]
     IC_deep_sigmaV=IC_deep[:,1]*ann_factor
     
     #ANTARES neutrino telescope analysis in https://arxiv.org/abs/1612.04595
-    ant_data_alb=np.loadtxt('Antares_alb.csv',delimiter=',')
+    ant_data_alb=np.loadtxt('Data_Files/Antares_alb.csv',delimiter=',')
     ant_mass2=ant_data_alb[:,0]
     ant_sigmaV=ant_data_alb[:,1]*ann_factor
     
     #IceCube neutrino observatory combined analysis from https://arxiv.org/pdf/1606.00209.pdf and https://arxiv.org/pdf/1705.08103.pdf
-    IceCube=np.loadtxt("IceCube_sigmaV_fig2.csv",delimiter=',')
+    IceCube=np.loadtxt("Data_Files/IceCube_sigmaV_fig2.csv",delimiter=',')
     IC_mass=IceCube[:,0]
     IC_sigmaV=IceCube[:,1]*ann_factor
     
     #CTA neutrino experiment, cross section data from https://arxiv.org/abs/1912.09486
-    CTA_dig=np.loadtxt('CTA_digitized.csv',delimiter=',')
+    CTA_dig=np.loadtxt('Data_Files/CTA_digitized.csv',delimiter=',')
     CTA_mass2=CTA_dig[:,0]
     CTA_sigmaV=CTA_dig[:,1]*ann_factor 
     
     #KM3NET experiment data from https://pos.sissa.it/358/552/pdf
-    km3_data=np.loadtxt('KM3NET_sigmaV.csv',delimiter=',')
+    km3_data=np.loadtxt('Data_Files/KM3NET_sigmaV.csv',delimiter=',')
     km3_mass=km3_data[:,0]  
     km3_sigmaV=(km3_data[:,1]/np.sqrt(5))*ann_factor        #sqrt(5) is so cross section corresponds to a 5 yr exposure
     
     #PONE experiment data from https://arxiv.org/abs/1912.09486
-    P1_data=np.loadtxt('PONE_sigmaV.csv',delimiter=',')
+    P1_data=np.loadtxt('Data_Files/PONE_sigmaV.csv',delimiter=',')
     P1_mass=P1_data[:,0]    #Indexing is based on length of sigmaV dataset
     P1_sigmaV=P1_data[:,1]*ann_factor
     
     #Icecube neutrino experiment  analysis of annihilation to electron neutrinos in https://arxiv.org/abs/1903.12623
-    IC_bhat_nue=np.loadtxt('IC_bhat_nue_sigmaV.csv',delimiter=',')
+    IC_bhat_nue=np.loadtxt('Data_Files/IC_bhat_nue_sigmaV.csv',delimiter=',')
     IC_bhat_nue_mass=IC_bhat_nue[:,0]*1000000 #converting from PeV -> GeV
     IC_bhat_nue_sigmaV=(IC_bhat_nue[:,1]*2/3)*ann_factor    #factor of 1/3 is due to their assumption of single channel decay (I assume equal branching ratio all flavors)
     
     #GRAND experiment analysis from https://arxiv.org/abs/1912.09486
-    grand_data=np.loadtxt('NewGRAND.txt',delimiter=',')
+    grand_data=np.loadtxt('Data_Files/NewGRAND.txt',delimiter=',')
     grand_mass=grand_data[:,0]
     grand_sigmaV=grand_data[:,1]*ann_factor
 
     #RNO-G data from https://arxiv.org/abs/1912.09486
-    rnogdata=np.loadtxt('newRNOG.txt',delimiter=',')
+    rnogdata=np.loadtxt('Data_Files/newRNOG.txt',delimiter=',')
     rnog_mass=rnogdata[:,0]
     rnog_sigmaV=(rnogdata[:,1]/2)*ann_factor     #Due to factor of 2 issue in previously digitized data
     
     #IceCube Extra High Energy (EHE) analysis in https://arxiv.org/abs/1912.09486
-    icehe_data=np.loadtxt("NewICEHE.txt",delimiter=',')
+    icehe_data=np.loadtxt("Data_Files/NewICEHE.txt",delimiter=',')
     icehe_mass=icehe_data[:,0]
     icehe_sigmaV=icehe_data[:,1]*ann_factor
     
     #Auger experiment analysis from https://arxiv.org/abs/1912.09486
-    auger_dat=np.loadtxt('newAuger.txt',delimiter=',')
+    auger_dat=np.loadtxt('Data_Files/newAuger.txt',delimiter=',')
     auger_mass=auger_dat[3:,0]
     auger_sigmaV=auger_dat[3:,1]*ann_factor
     
     #Importing TAMBO annihilation cross section data from https://arxiv.org/abs/1912.09486 
-    tamboData=np.loadtxt('stambo.txt',delimiter=',')
+    tamboData=np.loadtxt('Data_Files/stambo.txt',delimiter=',')
     tambo_Mass_ann=tamboData[:,0] 
     tambo_sigmaV=(tamboData[:,1]/2)*ann_factor  #due to factor of 2 issue in previously digitized data
     
@@ -1028,7 +1028,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     #%% Borexino
     
     #importing Borexino flux data (Fig. 4 in arxiv: 1909.02422v1)
-    bor_data2=np.loadtxt("borexino_data.dat")
+    bor_data2=np.loadtxt("Data_Files/borexino_data.dat")
     BorData=(np.transpose(bor_data2))
     bor_mass2=BorData[0]*2/1000                    #to convert MeV to GeV, factor of 2 because 1 DM -> 2 nu
     bor_flux2=BorData[1]*2     #Adding factor of 2 so decay limit is per flavor (not just nue_bar)
@@ -1041,13 +1041,13 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
 
     #KamLand is a bit more of a process as it involves the combination two separate analyses
     #Importing Kamland flux data (also in arxiv: 1909.02422v1)
-    KamData2=np.loadtxt('kamland_dphidE.dat')   
+    KamData2=np.loadtxt('Data_Files/kamland_dphidE.dat')   
     Kamland=np.transpose(KamData2)
     kam_mass2=Kamland[0]*2/1000                      #to convert MeV to GeV                 
     kam_flux2=Kamland[1]*2                          #same flavor detection factor as for Borexino  
 
     #Importing updated Kamland Flux limits
-    KamData3=np.loadtxt('Kamland_updated_flux.csv',delimiter=',')
+    KamData3=np.loadtxt('Data_Files/Kamland_updated_flux.csv',delimiter=',')
     kam_mass3=KamData3[:,0]*2/1000 
     kam_flux3=KamData3[:,1]*2 
 
@@ -1089,10 +1089,10 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     #Calculating lifetime limit directly from data in https://arxiv.org/pdf/2002.06475.pdf
     '''
     #Importing acceptance and N_background data from https://arxiv.org/pdf/2002.06475.pdf
-    tambo_accept=np.loadtxt('tambo_acceptance_u.dat',skiprows=1,delimiter=',')
+    tambo_accept=np.loadtxt('Data_Files/tambo_acceptance_u.dat',skiprows=1,delimiter=',')
     tambo_acc=tambo_accept[:,1]
 
-    tambo_data=np.loadtxt('Tambo_Nbk.csv',delimiter=',')
+    tambo_data=np.loadtxt('Data_Files/Tambo_Nbk.csv',delimiter=',')
 
     Tambo_binCentre_log=tambo_data[:,0] #bin centres in units of log10(E/eV), bins have a logarithmic width of 0.5
     Tambo_binCentres=(10**Tambo_binCentre_log)*1e-9     #Converting from log10(E/eV) units to GeV
@@ -1125,14 +1125,14 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     #%% P-ONE Lifetimes
 
     #Importing P-ONE Data
-    P1_data=np.loadtxt('PONE.txt')
+    P1_data=np.loadtxt('Data_Files/PONE.txt')
 
     P1_mass2=P1_data[1:49]   
     #P1_sigmaV=P1_data[51:99]
 
 
     #importing P-ONE effective area data
-    P1_aeffs=np.loadtxt('PONEAeffs.dat')
+    P1_aeffs=np.loadtxt('Data_Files/PONEAeffs.dat')
 
     #Saving effective area for each angular range. First and last data points are omitted as they are zero
     aeff1=P1_aeffs[1:-1,1]
@@ -1232,7 +1232,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     #%% Auger Lifetimes
 
     #Importing data used to calculate J and D factors
-    Auger_Paper=np.loadtxt('AUGER_PAPER.dat',delimiter='	')
+    Auger_Paper=np.loadtxt('Data_Files/AUGER_PAPER.dat',delimiter='	')
     E=Auger_Paper[:,0]  #eV 
     J_auger,D_auger=auger_factors(E)
 
@@ -1260,7 +1260,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     #%% CTA Lifetimes
     
     #Importing annihilation cross section limits from https://arxiv.org/abs/1912.09486
-    CTA_data=np.loadtxt('CTA.txt')
+    CTA_data=np.loadtxt('Data_Files/CTA.txt')
     cta_mass=CTA_data[:,0]*2
     cta_sigmaV=CTA_data[:,1]*2  #due to factor of 2 issue with data file
 
@@ -1270,7 +1270,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     #%% ANITA Lifetimes
 
     #Importing E flux from fig 6 in https://arxiv.org/pdf/1902.04005.pdf
-    anita_edata=np.loadtxt('ANITA_EFlux.csv',delimiter=',')
+    anita_edata=np.loadtxt('Data_Files/ANITA_EFlux.csv',delimiter=',')
     anitaE=anita_edata[:,0]*1e-9  #eV -> GeV
     anita_eflux=anita_edata[:,1]
     anita_flux=(anita_eflux*4*np.pi)/(anitaE*3)  #As flux is given per sr and all flavor flux)
@@ -1292,7 +1292,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     years = 365.*24.*60.*60.
     time_of_observation = 10.*years
 
-    juno = np.loadtxt('juno_background_events.csv', delimiter = ',')
+    juno = np.loadtxt('Data_Files/juno_background_events.csv', delimiter = ',')
 
     juno_bgspl = UnivariateSpline(juno[:,0], np.log10(juno[:,1]*juno[:,0]), k = 5, s = 0.001)
 
@@ -1305,7 +1305,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
         else:
             return(10**juno_bgspl(energy))
 
-    juno_xs = np.loadtxt('ibd_xs_juno.txt', delimiter = ' ')
+    juno_xs = np.loadtxt('Data_Files/ibd_xs_juno.txt', delimiter = ' ')
     energy = juno_xs[:,0]
     xs = juno_xs[:,1]
     xs_spline = UnivariateSpline(np.log10(energy), np.log10(xs), k=5, s=0.1)
@@ -1382,12 +1382,12 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     #%% GRAND lifetimes
 
     #Importing GRAND data from annihilation paper
-    grand_data=np.loadtxt('NewGRAND.txt',delimiter=',')
+    grand_data=np.loadtxt('Data_Files/NewGRAND.txt',delimiter=',')
     grand_mass=grand_data[:,0]*2
     grand_sigmaV=grand_data[:,1]
 
     #Importing flux data from fig.4 in https://arxiv.org/pdf/1810.09994.pdf
-    grand=np.loadtxt('GRAND_flux.csv',delimiter=',')
+    grand=np.loadtxt('Data_Files/GRAND_flux.csv',delimiter=',')
     E_grand=grand[:,0]
     grand_flux=(grand[:,1]/(E_grand**2))/3  #converting all flavor flux to per flavor flux
     grand_DM_mass=E_grand*2
@@ -1399,7 +1399,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     #%% DUNE lifetimes
 
     #Importing annihilation cross section limits from https://arxiv.org/abs/1912.09486
-    dune_dat=np.loadtxt('DUNE_sigmaV.csv',delimiter=',')
+    dune_dat=np.loadtxt('Data_Files/DUNE_sigmaV.csv',delimiter=',')
     dune_mass=dune_dat[:,0]*2
     dune_sigmaV=dune_dat[:,1]*ann_factor
 
@@ -1410,12 +1410,12 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     #%% IceCube (rescaling Aartsen et al annihilation limits)  
 
     #Importing cross section from https://arxiv.org/pdf/1606.00209.pdf (Aartsen 2016a)
-    IC_2016a=np.loadtxt("IceCube_sigmaV_2016a.csv",delimiter=',')
+    IC_2016a=np.loadtxt("Data_Files/IceCube_sigmaV_2016a.csv",delimiter=',')
     IC_2016a_mass=IC_2016a[:,0]
     IC_2016a_sigmaV=IC_2016a[:,1]
 
     #Importing cross section from Table 2 in https://arxiv.org/pdf/1705.08103.pdf (Aartsen 2017b)
-    IC_2017b=np.loadtxt("IC_2017b_table2_sigmaV.csv",delimiter=',')
+    IC_2017b=np.loadtxt("Data_Files/IC_2017b_table2_sigmaV.csv",delimiter=',')
     IC_2017b_mass=IC_2017b[:,0]
     IC_2017b_sigmaV=IC_2017b[:,1]
 
@@ -1431,7 +1431,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     #%% IC_DeepCore
 
     #Importing annihilation cross section data from conference proceedings ( https://arxiv.org/abs/2107.11224 )
-    IC_ant=np.loadtxt('IC_Antares_best_sigmaV_lims.csv',delimiter=',')
+    IC_ant=np.loadtxt('Data_Files/IC_Antares_best_sigmaV_lims.csv',delimiter=',')
     IC_ant_mass=IC_ant[:,0]*2
     IC_ant_sigmaV=IC_ant[:,1]
 
@@ -1441,7 +1441,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     #%% IceCube-EHE
 
     #Importing flux data from https://arxiv.org/pdf/1807.01820.pdf
-    ic_ehe=np.loadtxt('IC_EHE_energy_flux.csv',delimiter=',')
+    ic_ehe=np.loadtxt('Data_Files/IC_EHE_energy_flux.csv',delimiter=',')
     ic_ehe_Enu=ic_ehe[:,0]
     ic_ehe_flux=(ic_ehe[:,1]/3)/ic_ehe_Enu**2  #Their flux is divided by 3 as they show the ALL FLAVOR flux (and we want flux per flavor so we can get lifetime per flavor)
     ic_ehe_mass=ic_ehe_Enu*2
@@ -1451,7 +1451,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     #%% Conglomerate of SK and IceCube (High Energy and atm. neutrinos) and IC (Bhattachrya)
 
     #importing data and removing points that are 0
-    final_data=np.loadtxt('final_final_final_s_wave_Mmin_-3.0_halo_Sergio_combined_limits_glaactic.txt')
+    final_data=np.loadtxt('Data_Files/final_final_final_s_wave_Mmin_-3.0_halo_Sergio_combined_limits_glaactic.txt')
     final_massFull=final_data[0] #mass in GeV
     final_mass=final_massFull[13:-7]*2
     final_sigmaVFull=final_data[1]
@@ -1459,7 +1459,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
 
 
     #Importing IC Bhattachrya's DM -> nue decay lifetime line
-    IC_bhat_nue=np.loadtxt('IC_bhat_nue_tau.csv',delimiter=',')
+    IC_bhat_nue=np.loadtxt('Data_Files/IC_bhat_nue_tau.csv',delimiter=',')
     IC_bhat_nue_mass2=(IC_bhat_nue[:,0]*1000000)*2 #converting from PeV -> GeV
     IC_bhat_nue_tau=IC_bhat_nue[:,1]/3    #factor of 1/3 is due to their assumption of single channel decay
 
@@ -1472,13 +1472,13 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
 
     #Calculating SK lifetime limits directly from flux data in Fig 1 of annihilation paper
     #Note: I'm using both eqn. 14 in overleaf and classic lifetime equation
-    SK_nue2=np.loadtxt('Fig1_SK_nue.csv',delimiter=',')
+    SK_nue2=np.loadtxt('Data_Files/Fig1_SK_nue.csv',delimiter=',')
     SK_nue_mass2=SK_nue2[:,0]
     SK_nue_flux2=SK_nue2[:,1]/(SK_nue_mass2**2)  #as data is given in E^2 times flux
     SK_nue_mass=SK_nue_mass2*2          #factor of 2 for decay
 
     #importing bin edges shown in Fig. 1 of annihilation paper (horizontal error bars)
-    SK_nue_bin_data = np.loadtxt('SK_nue_bin_edges.csv', delimiter=',')
+    SK_nue_bin_data = np.loadtxt('Data_Files/SK_nue_bin_edges.csv', delimiter=',')
     SK_nue_bin_edges = np.log10(SK_nue_bin_data[:,0])
     SK_nue_delta=np.zeros(len(SK_nue_bin_edges)-1)
     for i in range(0,len(SK_nue_bin_edges)-1):
@@ -1486,10 +1486,10 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
 
 
     #Calculating IceCube limits (using fig. 1 data) using overleaf method
-    IceCube_Astro=np.loadtxt('IceCube_AstrophysicalFlux.csv',delimiter=',')
+    IceCube_Astro=np.loadtxt('Data_Files/IceCube_AstrophysicalFlux.csv',delimiter=',')
     IC_astro_mass=IceCube_Astro[:,0]
 
-    IC_astro_uppersigma_data=np.loadtxt('IC_astro_uppersigma.csv',delimiter=',')
+    IC_astro_uppersigma_data=np.loadtxt('Data_Files/IC_astro_uppersigma.csv',delimiter=',')
     IC_a_sigma_data=IC_astro_uppersigma_data[:,1]
     IC_astro_sigma=np.zeros(7)
     k=0
@@ -1512,7 +1512,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     IC_astro_tau_G1=bin_flux2Lifetime(alpha,IC_astro_delta,IC_astro_DM_mass,IC_astro_flux_upperlim,D_allsky)
 
     #Calculating IC_nue delta array (assuming each point is in the direct centre of the bin)
-    IC_nue=np.loadtxt('IceCube_nue.csv',delimiter=',')
+    IC_nue=np.loadtxt('Data_Files/IceCube_nue.csv',delimiter=',')
     IC_nue_mass2=IC_nue[:,0]
     IC_nue_flux2=IC_nue[:,1]/(IC_nue_mass2**2)
     IC_nue_mass=IC_nue_mass2*2
@@ -1523,7 +1523,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
 
 
     #Calculating IC_nue delta values (recognizing that points are not at centre of bin)
-    IC_nue_bin_edges=np.loadtxt('IC_nue_bin_edges.csv', delimiter=',')  
+    IC_nue_bin_edges=np.loadtxt('Data_Files/IC_nue_bin_edges.csv', delimiter=',')  
     IC_nue_bin_edges=np.log10(IC_nue_bin_edges[:,0])  #ignoring flux component of array
     IC_nue_upper_delta=np.zeros(4)  #array that will contain distance from most likely value to upper edge of bin
     IC_nue_lower_delta=np.zeros(4)  #array that will contain distance from most likely value to lower edge of bin
@@ -1535,7 +1535,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
         k=k+1 #used so mass array only increments by 1
 
     #Calculating upper limit of IC_nue flux data shown in figure 1
-    IC_nue_upper_sigma=np.loadtxt('IC_nue_upper_sigma.csv',delimiter=',')
+    IC_nue_upper_sigma=np.loadtxt('Data_Files/IC_nue_upper_sigma.csv',delimiter=',')
     IC_nue_upper_sigma=IC_nue_upper_sigma[:,1]
     IC_nue_sigma=np.zeros(4)
 
@@ -1579,13 +1579,13 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
 
     #This involves a lot of code as it is also a combination of old (labelled 4) and new (labelled 5) limits
     #Importing strongest (lowest) flux limits from fig. 6.6 in Linyan thesis
-    Sk_nuebarData4=np.loadtxt('Linyan_strongest_flux_lims.csv', delimiter=',')   
+    Sk_nuebarData4=np.loadtxt('Data_Files/Linyan_strongest_flux_lims.csv', delimiter=',')   
     Sk_nuebarData4=np.transpose(Sk_nuebarData4)
     Sk_nuebar_mass4=Sk_nuebarData4[0]*2/1000                    #decay factor of 2, MeV conversion                
     Sk_nuebar_flux4=Sk_nuebarData4[1]*2                    #same flavor detection factor as for Borexino 
 
     #Importing updated SK flux limits from fig. 25 in https://arxiv.org/pdf/2109.11174.pdf
-    Sk_nuebarData5=np.loadtxt('SK_2021_obs_flux.csv',delimiter=',')   
+    Sk_nuebarData5=np.loadtxt('Data_Files/SK_2021_obs_flux.csv',delimiter=',')   
     Sk_nuebarData5=np.transpose(Sk_nuebarData5)
     Sk_nuebar_mass5=Sk_nuebarData5[0]*2/1000                    #decay factor of 2, MeV conversion                
     Sk_nuebar_flux5=Sk_nuebarData5[1]*2  
@@ -1615,7 +1615,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     #%% RNO-G
 
     #Importing flux data from pg 35 of updated paper: https://arxiv.org/pdf/2010.12279.pdf
-    RNOG_a=np.loadtxt('RNOG_Aaron.csv',delimiter=',')
+    RNOG_a=np.loadtxt('Data_Files/RNOG_Aaron.csv',delimiter=',')
     rnog_a_mass=RNOG_a[:,0]*2  #for decay
     rnog_a_flux=(RNOG_a[:,1]/(RNOG_a[:,0]**2))/3 #1/3 is to convert an all flavor flux to a per flavor flux
 
@@ -1657,7 +1657,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     #%% IceCube Gen-2 **this limit still needs work**
 
     #Importing data from Figure 5 in https://arxiv.org/pdf/1911.02561.pdf
-    gen2=np.loadtxt('IC_gen2_E2flux.csv',delimiter=',')
+    gen2=np.loadtxt('Data_Files/IC_gen2_E2flux.csv',delimiter=',')
     gen2_E=gen2[:,0]   
     gen2_flux=gen2[:,1]/(3*gen2_E**2)   #factor of 3 because they show an all flavour flux
     gen2_mass=gen2_E*2
@@ -1665,7 +1665,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     gen2_tau=bin_f2l_alpha1(1,gen2_mass,gen2_flux,D_allsky)
 
     #importing data from fig 6
-    gen2_6=np.loadtxt('IC_Gen2_Fig6.csv',delimiter=',')
+    gen2_6=np.loadtxt('Data_Files/IC_Gen2_Fig6.csv',delimiter=',')
     gen2_E_6=gen2_6[:,0]   
     gen2_flux_6=(gen2_6[:,1]/(gen2_E_6**2))*624.151   #factor of 624 to convert erg -> GeV
     gen2_mass_6=gen2_E_6*2
@@ -1673,7 +1673,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
     gen2_tau_6=bin_flux2Lifetime(2, 1,gen2_mass_6,gen2_flux_6,D_allsky)
 
     #Importing annihilation cross section from DM annihilation paper
-    gen2_r=np.loadtxt('IC_gen2_sigmaV.csv',delimiter=',')
+    gen2_r=np.loadtxt('Data_Files/IC_gen2_sigmaV.csv',delimiter=',')
     gen2_r_mass=gen2_r[:,0]*2
     gen2_sigmaV=gen2_r[:,1]
 
@@ -1683,8 +1683,8 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
 
     #%% Fermi Limits Derived by Avi Friedlander
 
-    fermi=np.loadtxt('neutrino_Limit.csv',delimiter=',') #Limits from Cohen et al. (strongest lims from tau, mu, e data)
-    fermi_ext=np.loadtxt('approx_neutrino_Limit.csv',delimiter=',')  #Approximation by Avi to extend limits to higher mass
+    fermi=np.loadtxt('Data_Files/neutrino_Limit.csv',delimiter=',') #Limits from Cohen et al. (strongest lims from tau, mu, e data)
+    fermi_ext=np.loadtxt('Data_Files/approx_neutrino_Limit.csv',delimiter=',')  #Approximation by Avi to extend limits to higher mass
 
     
     #Plotting lifetime limits if desired by the user
