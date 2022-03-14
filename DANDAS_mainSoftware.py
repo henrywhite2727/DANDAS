@@ -1982,7 +1982,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
 
     output=1    
     if data==True:
-        return strongest_sigmaV(m_x),strongest_tau(m_x)
+        return np.array([strongest_sigmaV(m_x),strongest_tau(m_x)])
     else:
         return 1
 
