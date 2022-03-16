@@ -62,6 +62,9 @@ INPUTS
                            b) It must output the DM density in GeV/cm^3.
                            c) rho_func cannot be a lambda function.
                            
-    v)  plot_axes:  This controls the axes of the annihilation or decay plot output by DANDAS. It should be input as a numpy
+    v)  plot_axes_ann: This controls the axes of the annihilation cross section plot output by DANDAS. It should be input as a numpy
+                    array of the following form ([x_low, x_high, y_low, y_high]).
+    
+    vi) plot_axes_dec:  This controls the axes of the lifetime limit plot output by DANDAS. It should be input as a numpy
                     array of the following form ([x_low, x_high, y_low, y_high]).
     
