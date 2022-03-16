@@ -258,13 +258,13 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference,data,**kwargs):
 
         
         
-    elif Halo_Profile=='Einasto' or Halo_Profile=='Einasto_custom':
+    elif Halo_Profile=='Einasto' or Halo_Profile=='Einasto Custom Quick':
         
         #similar process for custom vs best fit parameter calculations is done for the Einasto profile
         if Halo_Profile=='Einasto':
             scaling_factor=1
             
-        if Halo_Profile=='Einasto_custom':
+        if Halo_Profile=='Einasto Custom Quick':
             #Importing custom halo profile parameters
             r0_custom = kwargs.get('r0', None) * 3.0857e21
             rho_0_custom = kwargs.get('rho_0', None)
@@ -669,7 +669,7 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference,data,**kwargs):
                         rho_DM=rho_s_ein * np.exp((-2/alpha)*(((r/rs)**alpha)-1))
                         
                     elif 'Custom Density Function':
-                        rho_func=kwargs.get('rho_function', None)
+                        rho_func=kwargs.get('rho_func', None)
                         
                         rho_DM=rho_func(r)
 
@@ -789,10 +789,10 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference,data,**kwargs):
         # --------------------------- Calculate D factors ------------------------------
         # ==============================================================================
         cta_dfactor = Dfactor('cta')
-        #D_cta=cta_dfactor.dfactor
+        D_cta=cta_dfactor.dfactor
         J_cta=cta_dfactor.jfactor
    
-        '''
+        
 
         
         allsky_dfactor = Dfactor('allsky')
@@ -859,7 +859,7 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference,data,**kwargs):
         J_pone1=J_pone[0]
         J_pone2=J_pone[1]
         J_pone3=J_pone[2]
-          '''
+          
         
         
         
@@ -1655,7 +1655,7 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference,data,**kwargs):
 
     
     #Plotting lifetime limits if desired by the user
-    if plot==True:
+    if plot_preference!='No_plot':
         plt.rcParams.update({'font.size': 12})
         plt.rcParams["font.family"] = "serif"
         fsize=12
