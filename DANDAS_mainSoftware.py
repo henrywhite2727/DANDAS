@@ -788,12 +788,6 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference,data,**kwargs):
         # ==============================================================================
         # --------------------------- Calculate D factors ------------------------------
         # ==============================================================================
-        cta_dfactor = Dfactor('cta')
-        D_cta=cta_dfactor.dfactor
-        J_cta=cta_dfactor.jfactor
-   
-        
-
         
         allsky_dfactor = Dfactor('allsky')
         D_allsky=allsky_dfactor.dfactor
