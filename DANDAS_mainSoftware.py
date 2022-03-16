@@ -190,41 +190,8 @@ def auger_factors(E):
 # In[25]:
 
 
-def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,**kwargs):
-    '''
-    INPUTS
-    
-    DM_mass: The mass value or range (in GeV) that Annihilation Cross Section (cm^3/s) and Lifetime (s) are calculated over. 
-             This input can be given as a value or an array
-    
-    Halo_Profile: Describes how dark matter density is distributed within a galaxy.
-                  For now, the user will have 3 options
-                  i) NFW halo profile where they can...
-                      a) 'NFW' : use rho_0=0.4 GeV cm^-3 and R_0=8.127 kpc (Best-Fit Values) for fastest run time (<<1s)
-                      b) 'NFW Custom Quick' : input their desired values for rho_0 [GeV cm^-3] and R_0 [kpc] and quickly get a value for all J and D factors through scaling (+/- some unknown error)
-                      c) 'NFW Custom Long' : input their desired values for all parameters and go through MC integration (takes approx. 40 mins but has less error)
+def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference,data,**kwargs):
 
-                    
-                  ii) Einasto halo profile
-                      a) 'Einasto Standard' : use rho_0=0.4 GeV cm^-3 and R_0=8.127 kpc and alpha=0.155 for fastest run time (<<1s)
-                      b) 'Einasto Custom Quick' : input their desired values for rho_0 and R_0 and quickly get a value for all J and D factors through scaling (+/- some unknown error)
-                      c) 'Einasto Custom Long' : input their desired values for all parameters and go through full MC integration (takes approx. 40 mins but has less error)
-                      
-                  iii) 'Custom Density Function'
-                      -This allows a user to input their desired density function
-                      
-                  
-                  NOTE: Not all parameters associated with the NFW and einasto profiles can be customized. The scale distance used (20 kpc)
-                  , the gamma value (1.2), and the alpha value (1.55) cannot be changed due to run time associated with calculating 
-                  J and D factors for different values of these parameters.
-                  
-    Antiparticle Nature: Whether a DM particle is assumed to be distinct from its antiparticle nature or not. Note that this
-                         parameter will only affect the annihilation cross section parameter. Inputs can be
-                         i) 'Majorana' : Assumes DM is its own antiparticle
-                         ii) 'Dirac'   : Assumes DM is distinct from its antiparticle counterpart
-                    
-    
-    '''
     
     if Halo_Profile=='NFW' or Halo_Profile=='NFW Custom Quick':
         #Current best fit NFW DM halo profile parameters from https://arxiv.org/abs/1912.09486
@@ -1803,11 +1770,20 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
         plt.fill_between(fermi_ext[:,0],fermi_ext[:,1], y2=1e-10,color=fer2_col,alpha=0.25,zorder=2)
         plt.text(1e8, 7e25, 'Fermi Extension', fontsize=fsize,color=fer2_col)
 
+        if plot_preference=='Full_Plot':
+            plt.xlim(1e-3,1e11)
+            plt.ylim(1e18,1e30)
+            
+        elif plot_preference=='Custom_plot':
+            plot_axes = kwargs.get('plot_axes_dec', None)
+            plt.xlim(plot_axes[0],plot_axes[1])
+            plt.ylim(plot_axes[2],plot_axes[3])
+                
         plt.yscale("log")
         plt.xscale("log")
         plt.ylabel(r'$\tau_\chi$  [s]')
         plt.xlabel(r'$m_\chi$ [GeV]')
-        plt.ylim(1e18,1e30)
+        
         
         #Graphics for Annihilation Cross Section Limits plot
         plt.figure(2,figsize=(19,11))
@@ -1915,8 +1891,15 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
         plt.xscale("log")
         plt.ylabel(r'$ \langle \sigma\nu \rangle $ $ [cm^3/s] $')
         plt.xlabel(r'$m_\chi$ [GeV]')
-        plt.ylim(1e-26,1e-19)
-        plt.xlim(1e-3,1e10)
+        
+        if plot_preference=='Full_Plot':
+            plt.ylim(1e-26,1e-19)
+            plt.xlim(1e-3,1e10)
+            
+        elif plot_preference=='Custom_plot':
+            plot_axes = kwargs.get('plot_axes_ann', None)
+            plt.xlim(plot_axes[0],plot_axes[1])
+            plt.ylim(plot_axes[2],plot_axes[3])
         
         
         '''
@@ -1982,7 +1965,7 @@ def DANDAS(DM_mass, Halo_Profile, Antiparticle_Nature, Decay_Process,plot,data,*
 
     output=1    
     if data==True:
-        return np.array([strongest_sigmaV(m_x),strongest_tau(m_x)])
+        return np.array([[strongest_sigmaV(m_x)],[strongest_tau(m_x)]])
     else:
         return 1
 
