@@ -390,7 +390,7 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference,data,**kwargs):
                     dec_equiv_upper = np.deg2rad(4.602) # alt
 
                     # GRAND data files for fractional acceptance
-                    alt_filename = 'alt_GRAND.txt'
+                    alt_filename = 'Data_Files/alt_GRAND.txt'
 
                 elif experiment == 'anita':
 
@@ -444,8 +444,8 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference,data,**kwargs):
                     dec_equiv_upper = np.deg2rad(35) # alt
 
             # TAMBO data files for fractional acceptance
-                    az_filename = 'tambo_azimuth.dat'
-                    alt_filename = 'tambo_elevation.dat'
+                    az_filename = 'Data_Files/tambo_azimuth.dat'
+                    alt_filename = 'Data_Files/tambo_elevation.dat'
 
                 elif experiment == 'auger':
 
