@@ -1208,7 +1208,11 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference, data,**kwargs):
 
     ant_mass=ant_mass2*2  #factor of 2 for decay
 
-    #The previously published data was rescaled to a lifetime limit
+    #ANTARES annihilation cross section limit was rescaled to a lifetime limit
+    
+    #The antiparticle nature does NOT affect a lifetime limit
+    if Antiparticle_Nature=='Dirac':
+        ant_sigmaV=ant_sigmaV/2         
     tau_ant=rescaling(ant_mass,ant_sigmaV,J_allsky,D_allsky)
 
     
