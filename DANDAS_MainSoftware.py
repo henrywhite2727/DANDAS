@@ -1210,8 +1210,7 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference, data,**kwargs):
 
     #ANTARES annihilation cross section limit was rescaled to a lifetime limit
     
-    #The antiparticle nature does NOT affect a lifetime limit
-    if Antiparticle_Nature=='Dirac':
+    #The antiparticle nature does NOT affect a lifetime limit (and the rescaling function is for a Majorana so assumptions must match)
         ant_sigmaV=ant_sigmaV/2         
     tau_ant=rescaling(ant_mass,ant_sigmaV,J_allsky,D_allsky)
 
@@ -1329,7 +1328,7 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference, data,**kwargs):
     #Importing annihilation cross section limits from https://arxiv.org/abs/1912.09486
     dune_dat=np.loadtxt('Data_Files/DUNE_sigmaV.csv',delimiter=',')
     dune_mass=dune_dat[:,0]*2
-    dune_sigmaV=dune_dat[:,1]*ann_factor
+    dune_sigmaV=dune_dat[:,1]-
 
     #Rescaling annihilation limits from https://arxiv.org/abs/1912.09486
     dune_tau=rescaling(dune_mass,dune_sigmaV,J_allsky,D_allsky)
@@ -1376,7 +1375,7 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference, data,**kwargs):
     final_massFull=final_data[0] #mass in GeV
     final_mass=final_massFull[13:-7]*2
     final_sigmaVFull=final_data[1]
-    final_sigmaV=final_sigmaVFull[13:-7]/4  #look in experimentcomparisons file for proof this is necessary
+    final_sigmaV=final_sigmaVFull[13:-7]/4  #Factor of 4 is due to digitization of limit before it was properly updated/adjusted
 
 
     #Importing IC Bhattachrya's DM -> nue decay lifetime line
@@ -1544,18 +1543,21 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference, data,**kwargs):
 
     #Using data from https://arxiv.org/pdf/2005.01950.pdf
     hk_mass_d=hk[:,0]*2
+    if Antiparticle_Nature=='Dirac':
+        hk_sigmaV=hk_sigmaV/2 
+        SK_sigmaV1=SK_sigmaV1/2
+        km3_sigmaV=km3_sigmaV/2 
+        sk_ol_sigmaV=sk_ol_sigmaV/2
+        
     hk_tau_d=rescaling(hk_mass_d,hk_sigmaV,J_allsky,D_allsky)
 
 
     #Using annihilation cross section data from https://arxiv.org/abs/1510.07999
     SK_mass2=SK_mass1*2
-
-    SK_tau1=rescaling(SK_mass2,SK_sigmaV1,2.3e23,D_allsky)
-
-
+    SK_tau1=rescaling(SK_mass2,SK_sigmaV1,2.3e23,D_allsky)    
+        
     #Importing annihilation cross section data from https://pos.sissa.it/358/552/pdf
     km3_mass2=km3_data[:,0]*2  #for decay of 1 DM to 2 neutrinos
-
     km3_tau=rescaling(km3_mass2,km3_sigmaV,J_allsky,D_allsky)
 
 
@@ -1589,11 +1591,6 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference, data,**kwargs):
 
     #rescaling annihilation
     gen2_tau_r=rescaling(gen2_r_mass,gen2_sigmaV,J_allsky,D_allsky)
-
-
-    fermi=np.loadtxt('Data_Files/neutrino_Limit.csv',delimiter=',') #Limits from Cohen et al. (strongest lims from tau, mu, e data)
-    fermi_ext=np.loadtxt('Data_Files/approx_neutrino_Limit.csv',delimiter=',')  #Approximation by Avi to extend limits to higher mass
-
     
     #Plotting lifetime limits if desired by the user
     if plot_preference!='No_plot':
@@ -1681,10 +1678,6 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference, data,**kwargs):
         plt.plot(km3_mass2,km3_tau,label='KM3NET',linewidth=1.5,color=km3_col,alpha=0.7, ls='--')
         plt.text(500, 5e28, 'KM3NET', fontsize=fsize,color=km3_col,clip_on=True)
 
-        #cta_col='#1f77b4'
-        #plt.plot(cta_mass,tau_cta, label='CTA',linewidth=1.5,color=cta_col,alpha=0.7, ls='--')
-        #plt.text(700, 3e23, 'CTA', fontsize=fsize,color=cta_col,clip_on=True)
-
         rno_col='#1f77b4'
         plt.plot(rnog_a_mass,rno_tau_a,label='RNO-G',linewidth=1.5,color=rno_col,alpha=0.7, ls='--')
         plt.text(8e9, 4e28, 'RNO-G', fontsize=fsize,color=rno_col,clip_on=True)
@@ -1700,16 +1693,6 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference, data,**kwargs):
         tam_col='#731fb4'
         plt.plot(tambo_mass,tambo_tau_d,label='TAMBO',linewidth=1.5,color=tam_col,alpha=0.7, ls='--')
         plt.text(6e5, 8e26, 'TAMBO', fontsize=fsize,color=tam_col,clip_on=True)
-
-        fer1_col='#2ca02c'
-        plt.plot(fermi[:,0],fermi[:,1],label='Fermi (Cohen et al.)',linewidth=1.5,color=fer1_col,alpha=0.7, ls='-')
-        plt.fill_between(fermi[:,0],fermi[:,1], y2=1e-10,color=fer1_col,alpha=0.25,zorder=2)
-        plt.text(3e5, 3e26, 'Fermi (Cohen et al.)', fontsize=fsize,color=fer1_col,clip_on=True)
-
-        fer2_col='#000000'
-        plt.plot(fermi_ext[:,0],fermi_ext[:,1],label='Fermi Extension',linewidth=1.5,color=fer2_col,alpha=0.7, ls='-')
-        plt.fill_between(fermi_ext[:,0],fermi_ext[:,1], y2=1e-10,color=fer2_col,alpha=0.25,zorder=2)
-        plt.text(1e8, 7e25, 'Fermi Extension', fontsize=fsize,color=fer2_col,clip_on=True)
 
         if plot_preference=='Full_Plot':
             plt.xlim(1e-3,1e11)
@@ -1809,10 +1792,6 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference, data,**kwargs):
         km3_col='#ff7f0e'
         plt.plot(km3_mass/2,km3_sigmaV,label='KM3NET',linewidth=1.5,color=km3_col,alpha=0.7, ls='--')
         plt.text(P1_mass[0], 2e-26, 'KM3NET', fontsize=fsize,color=km3_col,clip_on=True)
-
-        #cta_col='#1f77b4'
-        #plt.plot(CTA_mass2,CTA_sigmaV, label='CTA',linewidth=1.5,color=cta_col,alpha=0.7, ls='--')
-        #plt.text(14000, 1e-24, 'CTA', fontsize=fsize,color=cta_col,clip_on=True)
 
         rno_col='#1f77b4'
         plt.plot(rnog_mass,rnog_sigmaV,label='RNO-G',linewidth=1.5,color=rno_col,alpha=0.7, ls='--')
