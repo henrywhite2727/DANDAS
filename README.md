@@ -7,6 +7,10 @@ Examples of how to properly use DANDAS are included in the notebook: 'User-Open 
 A detailed description of all of the inputs to DANDAS are included below:
 
 INPUTS                
+
+
+
+
     Halo_Profile: Describes how dark matter density is distributed within a galaxy.
                   i) NFW halo profile where they can...
                       a) 'NFW' : use rho_0=0.4 GeV cm^-3 and R_0=8.127 kpc (Best-Fit Values) for fastest run time (<<1s)
@@ -14,13 +18,12 @@ INPUTS
 
                     
                   ii) Einasto halo profile
-                      a) 'Einasto Standard' : use rho_0=0.4 GeV cm^-3 and R_0=8.127 kpc and alpha=0.155 for fastest run time 
+                      a) 'Einasto' : use rho_0=0.4 GeV cm^-3 and R_0=8.127 kpc and alpha=0.155 for fastest run time 
                       c) 'Einasto Custom' : input their desired values for all parameters and go through full MC integration 
                       
                   iii) 'Custom Density Function'
                       -This allows a user to input their desired density function
                       
-                  
                   NOTE: Not all parameters associated with the NFW and einasto profiles can be customized. The scale distance used (20 kpc)
                   , the gamma value (1.2), and the alpha value (1.55) cannot be changed due to run time associated with calculating 
                   J and D factors for different values of these parameters.
