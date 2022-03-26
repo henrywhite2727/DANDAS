@@ -6,19 +6,16 @@ Examples of how to properly use DANDAS are included in the notebook: 'User-Open 
 
 A detailed description of all of the inputs to DANDAS are included below:
 
-INPUTS
-    
+INPUTS                
     Halo_Profile: Describes how dark matter density is distributed within a galaxy.
                   i) NFW halo profile where they can...
                       a) 'NFW' : use rho_0=0.4 GeV cm^-3 and R_0=8.127 kpc (Best-Fit Values) for fastest run time (<<1s)
-                      b) 'NFW Custom Quick' : input their desired values for rho_0 [GeV cm^-3] and R_0 [kpc] and quickly get a value for all J and D factors through scaling                                                  (Run time is less than 15s but results in +/- 5-15% error)
-                      c) 'NFW Custom Long' : input their desired values for all parameters and go through full Monte Carlo integration to calculate J and D factors (takes                                                  approx. 40 mins but has negligible error on calculation)
+                      b) 'NFW Custom' : input their desired values for all parameters and go through full Monte Carlo integration to calculate J and D factors 
 
                     
                   ii) Einasto halo profile
-                      a) 'Einasto Standard' : use rho_0=0.4 GeV cm^-3 and R_0=8.127 kpc and alpha=0.155 for fastest run time (<<1s)
-                      b) 'Einasto Custom Quick' : input their desired values for rho_0 and R_0 and quickly get a value for all J and D factors through scaling (Run time is                                                     less than 15s but results in +/- 5-15% error)
-                      c) 'Einasto Custom Long' : input their desired values for all parameters and go through full MC integration (takes                                                                                        approx. 40 mins but has negligible error on calculation)
+                      a) 'Einasto Standard' : use rho_0=0.4 GeV cm^-3 and R_0=8.127 kpc and alpha=0.155 for fastest run time 
+                      c) 'Einasto Custom' : input their desired values for all parameters and go through full MC integration 
                       
                   iii) 'Custom Density Function'
                       -This allows a user to input their desired density function
@@ -40,8 +37,13 @@ INPUTS
                          
                  iii) 'No_plot' : If no plot is desired, this is the input for you!
                  
+    reduce_runtime:  This input can reduce the run-time (in the case of a custom halo profile) by omitting calculations based on data from PONE, GRAND, and TAMBO                        experiments.
+                     i) True: If the user wants to omit lifetime and annihilation cross section calculations based on on data from PONE, TAMBO, and                                               GRAND to significantly reduce run time
+                     
+                     ii) False: If user wants to see limits calculated from PONE, TAMBO, and GRAND data. Results in a significant (30 minute) increase in                                            run time if a custom DM halo profile is input.
+                 
     data:  This option allows the user to save the strongest annihilation cross section and decay limits as an array. Inputs are
-                 i) True : This will output the bounds on annihilation cross section and lifetime as a 2D array over the mass range specified in the m_x **kwarg. This array                              will be saved within the variable used to call DANDAS. Note that these bounds are only based on published neutrino data, NOT projected sensitivies                            to neutrinos (shown on plots as dotted lines) 
+                 i) True : This will output the bounds on annihilation cross section and lifetime as a 2D array over the mass range specified in the m_x **kwarg.                               This array will be saved within the variable used to call DANDAS. Note that these bounds are only based on published neutrino data, NOT                             projected sensitivies to neutrinos (shown on plots as dotted lines) 
                  ii) False: DANDAS will not output any data
                 
     Optional inputs (**kwargs)
