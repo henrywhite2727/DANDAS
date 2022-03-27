@@ -736,30 +736,16 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference,reduce_runtime, dat
         allsky_dfactor = Dfactor('allsky')
         D_allsky=allsky_dfactor.meanD
         J_allsky=allsky_dfactor.meanJ
-        
-        stop3 = timeit.default_timer()
-        print ("Time for allsky calculation:", stop3 - start1)
-        print(D_allsky)
-        
+      
         if reduce_runtime==False:
 
             grand_dfactor = Dfactor('grand')
             D_grand=grand_dfactor.meanD
             J_grand=grand_dfactor.meanJ
-
-            stop5 = timeit.default_timer()
-            print ("Time for grand calculation:", stop5 - start1)
-            print(D_grand)
-
-
+            
             tambo_dfactor = Dfactor('tambo')
             D_tambo=tambo_dfactor.meanD
             J_tambo=tambo_dfactor.meanJ
-
-            stop6 = timeit.default_timer()
-            print ("Time for tambo calculation:", stop6 - start1)
-            print(D_tambo)
-
 
             k=0
             D_pone=np.zeros(3)
@@ -777,10 +763,6 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference,reduce_runtime, dat
             J_pone1=J_pone[0]
             J_pone2=J_pone[1]
             J_pone3=J_pone[2]
-
-            stop2 = timeit.default_timer()
-            print ("Time for J/D factor calculation:", stop2 - start1) 
-
 
         '''
         The following section of DANDAS computes all of the annihilation and decay limits based on the users assumption.
