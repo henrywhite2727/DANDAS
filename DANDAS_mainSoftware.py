@@ -1564,8 +1564,8 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference,reduce_runtime, dat
                 
         plt.yscale("log")
         plt.xscale("log")
-        plt.ylabel(r'$\tau_\chi$  [s]')
-        plt.xlabel(r'$m_\chi$ [GeV]')
+        plt.ylabel(r'$\tau_\chi$  [s]',fontsize=fsize)
+        plt.xlabel(r'$m_\chi$ [GeV]',fontsize=fsize)
         
         plt.savefig("Dark Matter Lifetime Limits.pdf",dpi=200)
         
@@ -1670,8 +1670,8 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference,reduce_runtime, dat
 
         plt.yscale("log")
         plt.xscale("log")
-        plt.ylabel(r'$ \langle \sigma\nu \rangle $ $ [cm^3/s] $')
-        plt.xlabel(r'$m_\chi$ [GeV]')
+        plt.ylabel(r'$ \langle \sigma\nu \rangle $ $ [cm^3/s] $',fontsize=fsize)
+        plt.xlabel(r'$m_\chi$ [GeV]',fontsize=fsize)
         
         
         
