@@ -1458,7 +1458,7 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference,reduce_runtime, dat
     if plot_preference!='No_plot':
         plt.rcParams.update({'font.size': 12})
         plt.rcParams["font.family"] = "serif"
-        fsize=12
+        fsize=16
          
         #Graphics for Lifetime Limits plot
         plt.figure(1,figsize=(19,11))
@@ -1572,7 +1572,7 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference,reduce_runtime, dat
         
         #Graphics for Annihilation Cross Section Limits plot
         plt.figure(2,figsize=(19,11))
-        fsize=12
+        fsize=16
         
         
 
