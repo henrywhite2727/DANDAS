@@ -3,7 +3,7 @@
 # ##### With lots of help from Aaron Vincent and Diyaselis Delgado 
 
 
-
+#Importing necessary libraries
 import numpy as np
 get_ipython().run_line_magic('pip', 'install vegas #(this line was used to install vegas in jupyter notebooks)')
 import vegas
@@ -25,7 +25,7 @@ from scipy.optimize import fsolve
 import timeit
 
 
-
+#Defining functions used within DANDAS
 def rescaling(mass,sigmaV,J,D):
     '''
     This function calculates DM decay lifetime to per nu + nubar flavor by rescaling annihilation cross section data
@@ -184,7 +184,9 @@ def auger_factors(E):
 
 
 def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference,reduce_runtime, data,**kwargs):
-    start1 = timeit.default_timer()
+    '''
+    The first section (lines 190-767) of DANDAS calculates J and D factors based on the users' assumptions.
+    '''
     
     if Halo_Profile=='NFW':
         scaling_factor_J=1
@@ -767,15 +769,15 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference,reduce_runtime, dat
         '''
         The following section of DANDAS computes all of the annihilation and decay limits based on the users assumption.
         Recalculating the annihilation cross section data used in the "Dark Matter Annihilation to Neutrinos" paper was deemed
-        to be out of the scope of this project so data is imported and rescaled based on the users assumptions (about Halo profile, antiparticle nature, and flavor).
+        to be out of the scope of this project so data is imported and rescaled based on the users assumptions (about Halo profile, and antiparticle nature).
         
         Lifetime limits are calculated within DANDAS due to their minimal run time. Further,
         by including the process by which each limit was calculated, there is greater transparency with other researchers about the process
         applied to calculate their 'customized' DM annihilation/decay parameters.
         
-        Annihilation cross section data is imported and scaled according to assumptions in lines ___ to ___.
+        Annihilation cross section data is imported and scaled according to assumptions in lines 786 to 883.
         
-        Decay lifetime data is calculated in lines __ to ___.
+        Decay lifetime limits are calculated in lines 888 to 1450.
         '''
     
     
@@ -879,12 +881,6 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference,reduce_runtime, dat
         tamboData=np.loadtxt('Data_Files/stambo.txt',delimiter=',')
         tambo_Mass_ann=tamboData[:,0] 
         tambo_sigmaV=(tamboData[:,1]/2)*ann_factor*(0.0009e23/J_tambo)  #due to factor of 2 issue in previously digitized data
-
-
-    
-    
-    
-    
 
 
     ''' Calculating Lifetime limits based on data from different experiments '''
@@ -1452,6 +1448,10 @@ def DANDAS(Halo_Profile, Antiparticle_Nature,plot_preference,reduce_runtime, dat
 
     #rescaling annihilation
     gen2_tau_r=rescaling(gen2_r_mass,gen2_sigmaV,J_allsky,D_allsky)
+    
+    '''
+    The final section of DANDAS produces the graphical or numerical output desired by the user.
+    '''
 
 
     #Plotting lifetime limits if desired by the user
