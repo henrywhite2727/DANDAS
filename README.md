@@ -37,13 +37,13 @@ INPUTS
                          
                  iii) 'No_plot' : If no plot is desired, this is the input for you!
                  
-    reduce_runtime:  This input can reduce the run-time (in the case of a custom halo profile) by omitting calculations based on data from PONE, GRAND, and TAMBO                        experiments.
-                     i) True: If the user wants to omit lifetime and annihilation cross section calculations based on on data from PONE, TAMBO, and                GRAND to significantly reduce run time
+    reduce_runtime:  This input can reduce the run-time (in the case of a custom halo profile) by omitting calculations based on data from PONE, GRAND, and TAMBO   experiments.
+                     i) True: If the user wants to omit lifetime and annihilation cross section calculations based on on data from PONE, TAMBO, and GRAND to significantly reduce run time
                      
                      ii) False: If user wants to see limits calculated from PONE, TAMBO, and GRAND data. Results in a significant (>30 minute) increase in           run time if a custom DM halo profile is input.
                  
     data:  This option allows the user to save the strongest annihilation cross section and decay limits as an array. Inputs are
-                 i) True : This will output the bounds on annihilation cross section and lifetime as an array over the mass range specified in the m_x input.       This array will be saved within the variable used to call DANDAS. Note that these bounds are only based on published neutrino data, NOT                             projected sensitivies to neutrinos (shown on plots as dotted lines) 
+                 i) True : This will output the bounds on annihilation cross section and lifetime as an array over the mass range specified in the m_x input. This array will be saved within the variable used to call DANDAS. Note that these bounds are only based on published neutrino data, NOT projected sensitivies to neutrinos (shown on plots as dotted lines) 
                  ii) False: DANDAS will not output any data
                 
     Optional inputs (**kwargs)
@@ -56,8 +56,7 @@ INPUTS
                   input if 'NFW Custom' or 'Einasto Custom' is desired by the user.
                   
     iv)    rho_function: If a 'Custom Density function' is desired for the DM halo profile, it will be passed in with rho_function. This function must fit the following specifications to work within DANDAS:
-                           a) It's only input can be distance from the Milky Way's galactic centre. This input must be given
-in cm. All other parameters must be defined within the function.
+                           a) It's only input can be distance from the Milky Way's galactic centre. This input must be given in cm. All other parameters must be defined within the function.
                            b) It must output the DM density in GeV/cm^3.
                            c) rho_func cannot be a lambda function.
                            
