@@ -13,20 +13,17 @@ INPUTS
 
     Halo_Profile: Describes how dark matter density is distributed within a galaxy.
                   i) NFW halo profile where they can...
-                      a) 'NFW' : use rho_0=0.4 GeV cm^-3 and R_0=8.127 kpc (Best-Fit Values) for fastest run time (<<1s)
-                      b) 'NFW Custom' : input their desired values for all parameters and go through full Monte Carlo integration to calculate J and D factors 
+                      a) 'NFW' : use rho_0=0.4 GeV cm^-3, rs=20 kpc, gamma=1.2, and R_0=8.127 kpc (Best-Fit Values) for fastest run time (<<5s)
+                      b) 'NFW Custom' : user inputs their desired values for all parameters to calculate J and D factors 
 
                     
                   ii) Einasto halo profile
-                      a) 'Einasto' : use rho_0=0.4 GeV cm^-3 and R_0=8.127 kpc and alpha=0.155 for fastest run time 
+                      a) 'Einasto' : use rho_0=0.4 GeV cm^-3, rs=20 kpc, alpha=0.155 and R_0=8.127 kpc and alpha=0.155 for fastest run time 
                       c) 'Einasto Custom' : input their desired values for all parameters and go through full MC integration 
                       
                   iii) 'Custom Density Function'
                       -This allows a user to input their desired density function
-                      
-                  NOTE: Not all parameters associated with the NFW and einasto profiles can be customized. The scale distance used (20 kpc)
-                  , the gamma value (1.2), and the alpha value (1.55) cannot be changed due to run time associated with calculating 
-                  J and D factors for different values of these parameters.
+                     
                   
     Antiparticle Nature: Whether a DM particle is assumed to be distinct from its antiparticle nature or not. Note that this
                          parameter will only affect the annihilation cross section parameter. Inputs can be
@@ -41,29 +38,26 @@ INPUTS
                  iii) 'No_plot' : If no plot is desired, this is the input for you!
                  
     reduce_runtime:  This input can reduce the run-time (in the case of a custom halo profile) by omitting calculations based on data from PONE, GRAND, and TAMBO                        experiments.
-                     i) True: If the user wants to omit lifetime and annihilation cross section calculations based on on data from PONE, TAMBO, and                                               GRAND to significantly reduce run time
+                     i) True: If the user wants to omit lifetime and annihilation cross section calculations based on on data from PONE, TAMBO, and                GRAND to significantly reduce run time
                      
-                     ii) False: If user wants to see limits calculated from PONE, TAMBO, and GRAND data. Results in a significant (30 minute) increase in                                            run time if a custom DM halo profile is input.
+                     ii) False: If user wants to see limits calculated from PONE, TAMBO, and GRAND data. Results in a significant (>30 minute) increase in           run time if a custom DM halo profile is input.
                  
     data:  This option allows the user to save the strongest annihilation cross section and decay limits as an array. Inputs are
-                 i) True : This will output the bounds on annihilation cross section and lifetime as a 2D array over the mass range specified in the m_x **kwarg.                               This array will be saved within the variable used to call DANDAS. Note that these bounds are only based on published neutrino data, NOT                             projected sensitivies to neutrinos (shown on plots as dotted lines) 
+                 i) True : This will output the bounds on annihilation cross section and lifetime as an array over the mass range specified in the m_x input.       This array will be saved within the variable used to call DANDAS. Note that these bounds are only based on published neutrino data, NOT                             projected sensitivies to neutrinos (shown on plots as dotted lines) 
                  ii) False: DANDAS will not output any data
                 
     Optional inputs (**kwargs)
     
-    i)     m_x: The mass value or range (in GeV) that Annihilation Cross Section (cm^3/s) and Lifetime (s) are calculated over. 
-             This input can be given as a value or an array
+    i)     m_x: The mass value or range (in GeV) that Annihilation Cross Section (cm^3/s) and Lifetime (s) are calculated over. This input can be given as a float or an array of floats
     
-    ii)    rho_0: The scale DM density used to calibrate the DM density function (GeV/cm^3). Note that this value is only
-                  input if 'NFW Custom Quick' or 'Einasto Custom Quick' is desired by the user
+    ii)    rho_0: The known DM density used to calibrate the DM density function (GeV/cm^3). Note that this value is only input if 'NFW Custom' or 'Einasto Custom' is desired by the user
     
     iii)   r0: The distance (in cm) to the point where the scale DM density of the milky way is true. Note that this value is only
-                  input if 'NFW Custom Quick' or 'Einasto Custom Quick' is desired by the user.
+                  input if 'NFW Custom' or 'Einasto Custom' is desired by the user.
                   
-    iv)    rho_func: If a 'Custom Density function' is desired for the DM halo profile, it will be passed in with rho_func.
-                       This function must fit the following specifications to work within DANDAS:
+    iv)    rho_function: If a 'Custom Density function' is desired for the DM halo profile, it will be passed in with rho_function. This function must fit the following specifications to work within DANDAS:
                            a) It's only input can be distance from the Milky Way's galactic centre. This input must be given
-                              in cm. All other parameters must be defined within the function as numbers.
+in cm. All other parameters must be defined within the function.
                            b) It must output the DM density in GeV/cm^3.
                            c) rho_func cannot be a lambda function.
                            
